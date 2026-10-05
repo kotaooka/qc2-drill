@@ -39,7 +39,9 @@ h2{font-family:var(--f-disp);font-size:1.15rem;margin:24px 0 10px;text-wrap:bala
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--accent);background:var(--accent);color:var(--card);border-radius:4px;padding:10px 16px;font-weight:700;cursor:pointer;min-height:44px}
 .btn.ghost{background:transparent;color:var(--accent)}
 .fgrp{padding:0;margin-bottom:10px;overflow:hidden}.fgrp summary{padding:14px 16px;font-weight:700;cursor:pointer;min-height:44px;box-sizing:border-box}
-.frow{padding:10px 16px;border-top:1px solid var(--line)}.frow .fn{font-size:.82rem;color:var(--muted);font-weight:700}
+.frow{padding:10px 16px;border-top:1px solid var(--line)}
+.fsym{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:0;padding:10px 16px 12px;background:var(--accent-soft);border-top:1px solid var(--line);font-size:.85rem}
+.fsym .fsh{grid-column:1/-1;font-weight:700;color:var(--accent);font-size:.8rem}.fsym dt{font-weight:700;max-width:7.5em;overflow-wrap:anywhere}.fsym dd{margin:0;color:var(--ink)}.frow .fn{font-size:.82rem;color:var(--muted);font-weight:700}
 .frow .ff{font-size:1rem;margin-top:2px;line-height:1.6;overflow-wrap:anywhere}.frow .fd{font-size:.8rem;color:var(--muted);margin-top:2px}
 a.btn{text-decoration:none}
 .btn.danger{background:transparent;border-color:var(--ucl);color:var(--ucl)}
@@ -548,15 +550,16 @@ const T=/*TABLES*/;
 /*BANK*/
 /*GEN*/
 // ===== 共通 =====
-// 試験回：公式に発表された回（res.js の EXAMS）から選ぶか、日付を自分で指定する（端末ごとに保存）
-function examSel(){let id='auto',d='';try{id=localStorage.getItem('qc2-exam')||'auto';d=localStorage.getItem('qc2-exam-date')||'';}catch(e){}return{id,d};}
-function curExam(){
-  const {id,d}=examSel(),today=dayKey(new Date());
-  if(id==='custom')return d?{label:'試験日',date:d,custom:true}:null;
-  if(id==='none')return null;
-  const e=EXAMS.find(x=>x.id===id)||EXAMS.find(x=>x.date>=today);
-  return e||null;
-}
+// 試験日：利用者が自分で設定する（端末ごとに保存）。申込締切は任意
+const EXAM_URL='https://webdesk.jsa.or.jp/common/W10K0500/index/qc/qc_next_kentei';
+const getLS=k=>{try{return localStorage.getItem(k)||'';}catch(e){return '';}};
+const setLS=(k,v)=>{try{if(v)localStorage.setItem(k,v);else localStorage.removeItem(k);}catch(e){}};
+// 以前の版（試験回を一覧から選ぶ方式）の設定を、日付の設定に移す
+function migrateExam(){const id=getLS('qc2-exam');if(!id)return;
+  if((id==='auto'||id==='43')&&!getLS('qc2-exam-date')&&dayKey(new Date())<='2027-03-21'){setLS('qc2-exam-date','2027-03-21');if(!getLS('qc2-apply-end'))setLS('qc2-apply-end','2027-01-21');}
+  if(id==='none')setLS('qc2-exam-date','');
+  setLS('qc2-exam','');}
+function curExam(){const d=getLS('qc2-exam-date');if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return null;const a=getLS('qc2-apply-end'),ok=/^\d{4}-\d{2}-\d{2}$/.test(a)&&a<=d&&(new Date(d)-new Date(a))/864e5<=120;return{label:'試験日',date:d,applyEnd:ok?a:''};}
 const daysTo=date=>Math.ceil((new Date(date+'T00:00:00')-new Date(dayKey(new Date())+'T00:00:00'))/864e5);
 const md=d=>{const [y,m,dd]=d.split('-');return `${+m}/${+dd}`;};
 const $=s=>document.querySelector(s);
@@ -901,7 +904,7 @@ function homeHTML(){
   const last=P.mocks[P.mocks.length-1];
   const st=streakInfo(),ns=nextStage(),ci=curChapter(),ch=PATH[ci],ex=curExam();
   const dd=ex?daysTo(ex.date):null,today=dayKey(new Date());
-  const apply=ex&&ex.apply&&today<=ex.apply[1]?`申込受付 ${md(ex.apply[0])}〜${md(ex.apply[1])}${today<ex.apply[0]?'（受付前）':'（受付中）'}`:'';
+  const apply=ex&&ex.applyEnd&&today<=ex.applyEnd&&dd>=0?`申込締切 ${md(ex.applyEnd)}（あと${daysTo(ex.applyEnd)}日）`:'';
   const tile=(act,ic,t,sub,dis)=>`<button class="tile" data-act="${act}" ${dis?'disabled':''}><span class="ic">${ICON[ic]}</span><b>${t}</b><span class="sub">${sub}</span></button>`;
   const cont=ns?{t:ns.name,s:`${ch.title}・★${stars(ns.id)}／${PATH_RULE.starsToClear}`,a:`data-stage="${ns.id}"`,o:ns.si+1}
     :{t:ch.final?'最終試験：模擬試験':'章末テスト',s:ch.title,a:`data-ctest="${ci}"`,o:ICON.flag};
@@ -909,7 +912,7 @@ function homeHTML(){
   <section class="hero" aria-label="今日の状況">
     <div class="row">
       <div style="min-width:0">
-        ${ex?(dd>=0?`<div class="exam">${esc(ex.label)}（${ex.date}）まで</div><div class="days">${dd}<small>日</small></div>`:`<div class="exam">${esc(ex.label)}は終了しました</div><div class="days" style="font-size:1.4rem">次の回を設定</div>`)
+        ${ex?(dd>=0?`<div class="exam">${esc(ex.label)}（${ex.date}）まで</div><div class="days">${dd}<small>日</small></div>`:`<div class="exam">試験日（${ex.date}）が過ぎました</div><div class="days" style="font-size:1.4rem">次の試験日を設定</div><button class="btn tonal sm" data-act="openset" style="margin-top:8px">設定する</button>`)
           :`<div class="exam">今日も1問から</div><div class="days" style="font-size:1.6rem">${esc(role())}</div><button class="btn tonal sm" data-act="openset" style="margin-top:8px">試験日を設定</button>`}
         ${apply?`<div class="sub">${apply}</div>`:''}
       </div>
@@ -1304,8 +1307,8 @@ function tablesHTML(where){
 }
 // ===== 公式集 =====
 function formulasHTML(){
-  return `<h2>公式集</h2><p class="note" style="margin-top:0">計算問題でよく使う公式です。数値表は「数値表」タブ、計算は問題画面の電卓を使ってください。</p>
-  ${FORMULAS.map((g,i)=>`<details class="panel fgrp"${i===0?' open':''}><summary>${esc(g.h)}</summary>${g.items.map(([n,f,d])=>`<div class="frow"><div class="fn">${esc(n)}</div><div class="ff">${f.split('、').map(x=>`<div>${esc(x)}</div>`).join('')}</div>${d?`<div class="fd">${esc(d)}</div>`:''}</div>`).join('')}</details>`).join('')}`;
+  return `<h2>公式集</h2><p class="note" style="margin-top:0">計算問題でよく使う公式です。各分野の最初に、式に出てくる記号の意味をまとめています。数値表は「数値表」タブ、計算は問題画面の電卓を使ってください。</p>
+  ${FORMULAS.map((g,i)=>`<details class="panel fgrp"${i===0?' open':''}><summary>${esc(g.h)}</summary>${g.sym?`<dl class="fsym"><div class="fsh">記号の意味</div>${g.sym.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`:''}${g.items.map(([n,f,d])=>`<div class="frow"><div class="fn">${esc(n)}</div><div class="ff">${f.split('、').map(x=>`<div>${esc(x)}</div>`).join('')}</div>${d?`<div class="fd">${esc(d)}</div>`:''}</div>`).join('')}</details>`).join('')}`;
 }
 // ===== 資料 =====
 const A=(t,u)=>`<a href="${u}" target="_blank" rel="noopener">${esc(t)}</a>`;
@@ -1545,7 +1548,7 @@ function audioState(){if(!(window.AudioContext||window.webkitAudioContext))retur
 let onb=null;   // {step}
 function onbSteps(){return['hello','exam','goal','view'].concat(APPB()?['notify']:[]);}
 function onbHTML(){
-  const st=onbSteps(),k=st[onb.step],ex=examSel(),today=dayKey(new Date()),rc=remindCfg(),pad=n=>String(n).padStart(2,'0');
+  const st=onbSteps(),k=st[onb.step],today=dayKey(new Date()),rc=remindCfg(),pad=n=>String(n).padStart(2,'0');
   const card=(attr,on,title,sub)=>`<button class="ocard" ${attr} aria-pressed="${on}"><b>${title}</b>${sub?`<span>${sub}</span>`:''}</button>`;
   let body='';
   if(k==='hello')body=`<div class="ohero">${$('.brandmark').outerHTML}</div><h2 class="otitle">QC2級ドリルへようこそ</h2>
@@ -1553,11 +1556,10 @@ function onbHTML(){
     <li><b>毎日の目標と連続記録</b><span>決めた問題数を解いた日が、連続記録の1日になります</span></li>
     <li><b>間隔をあけた復習</b><span>間違えた問題や忘れかけた問題を、ちょうどよい間隔で出し直します</span></li></ul>
     <p class="note">これから受験日・目標・表示を設定します。あとから右上の設定で変えられます。</p>`;
-  if(k==='exam')body=`<h2 class="otitle">いつ受験しますか</h2><p class="note">ホームに試験日までの日数と申込期間を表示します。</p><div class="ocards">
-    ${EXAMS.filter(e=>e.date>=today).map(e=>card(`data-oexam="${e.id}"`,ex.id===e.id||(ex.id==='auto'&&e===EXAMS.find(x=>x.date>=today)),`${esc(e.label)}（${e.date}）`,e.apply?`申込受付 ${e.apply[0]}〜${e.apply[1]}`:'')).join('')}
-    ${card('data-oexam="custom"',ex.id==='custom','日付を指定する','次の回が未発表のときなど')}
-    ${ex.id==='custom'?`<input type="date" id="onbDate" value="${esc(ex.d)}" aria-label="試験日">`:''}
-    ${card('data-oexam="none"',ex.id==='none','まだ決めていない','試験日の表示を出しません')}</div>`;
+  if(k==='exam'){const ex=curExam();body=`<h2 class="otitle">いつ受験しますか</h2><p class="note">試験日を入れると、ホームに試験日までの日数を表示します。日程は<a href="${EXAM_URL}" target="_blank" rel="noopener">日本規格協会の試験日程のページ</a>で確認できます。</p>
+    <div class="srow col"><div class="t"><b>試験日</b></div><input type="date" id="onbDate" value="${esc(ex?ex.date:'')}" min="${today}" aria-label="試験日"></div>
+    <div class="srow col"><div class="t"><b>申込締切</b><span>任意。入れると締切までの日数も表示します</span></div><input type="date" id="onbApply" value="${esc(ex?ex.applyEnd:'')}" aria-label="申込締切"></div>
+    <div class="ocards">${card('data-oexam="none"',!ex,'まだ決めていない','あとから右上の設定で入れられます')}</div>`;}
   if(k==='goal')body=`<h2 class="otitle">1日に何問解きますか</h2><p class="note">1問およそ1分が目安です。続けやすい量を選んでください。</p><div class="ocards">
     ${[[5,'気軽に','約5分'],[10,'ふつう','約10分'],[20,'しっかり','約20分'],[30,'本気','約30分']].map(([n,l,m])=>card(`data-ogoal="${n}"`,(P.goal||10)===n,`${n}問　${l}`,m)).join('')}</div>`;
   if(k==='view')body=`<h2 class="otitle">見やすさを選ぶ</h2>
@@ -1580,14 +1582,15 @@ $('#onb').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)
   if(d.oskip!=null){closeOnb();return;}
   if(d.oback!=null){onb.step=Math.max(0,onb.step-1);onbRefresh();return;}
   if(d.onext!=null){if(onb.step>=onbSteps().length-1){closeOnb();sfx('right');return;}onb.step++;onbRefresh();$('#onb').scrollTop=0;return;}
-  if(d.oexam){try{localStorage.setItem('qc2-exam',d.oexam);}catch(x){}onbRefresh();return;}
+  if(d.oexam==='none'){setLS('qc2-exam-date','');setLS('qc2-apply-end','');onbRefresh();return;}
   if(d.ogoal){P.goal=+d.ogoal;persist();onbRefresh();return;}
   if(d.ofs){fontScale=d.ofs;try{localStorage.setItem('qc2-fs',fontScale);}catch(x){}applyFont();onbRefresh();return;}
   if(d.otheme){theme=d.otheme;try{localStorage.setItem('qc2-theme',theme);}catch(x){}applyTheme();onbRefresh();return;}
   if(d.orem){const c=remindCfg();c.on=d.orem==='on';saveRemind(c);syncNative();onbRefresh();return;}
 });
 $('#onb').addEventListener('change',e=>{
-  if(e.target.id==='onbDate'){try{localStorage.setItem('qc2-exam-date',e.target.value);}catch(x){}}
+  if(e.target.id==='onbDate'){setLS('qc2-exam-date',e.target.value);onbRefresh();}
+  if(e.target.id==='onbApply'){setLS('qc2-apply-end',e.target.value);}
   if(e.target.id==='onbTime'){const [h,m]=e.target.value.split(':').map(Number);const c=remindCfg();c.h=h||0;c.m=m||0;saveRemind(c);}
 });
 // 初回だけ表示する。すでに解答記録がある人（以前の版からの更新）には出さない
@@ -1687,7 +1690,7 @@ function syncNative(){const b=APPB();if(!b)return;try{const st=streakInfo();b.se
 function settingsHTML(){
   const seg=(key,cur,vals)=>`<div class="seg">${vals.map(([v,l])=>`<button data-setk="${key}" data-val="${v}" aria-pressed="${String(cur)===String(v)}">${l}</button>`).join('')}</div>`;
   const sw=(key,on,lab)=>`<button class="switch" role="switch" data-sw="${key}" aria-checked="${!!on}" aria-label="${lab}"></button>`;
-  const H=APP.history,ex=examSel(),rc=remindCfg(),app=APPB(),pad=n=>String(n).padStart(2,'0');
+  const H=APP.history,ex=curExam(),rc=remindCfg(),app=APPB(),pad=n=>String(n).padStart(2,'0');
   let allowed=true;if(app)try{allowed=app.notifAllowed();}catch(e){}
   const today=dayKey(new Date());
   return `
@@ -1700,10 +1703,11 @@ function settingsHTML(){
   </div>
   <div class="setcard"><h3>学習</h3>
     <div class="srow col"><div class="t"><b>1日の目標</b><span>この問題数を解いた日が、連続記録の1日になります</span></div>${seg('goal',P.goal||10,[[5,'5問'],[10,'10問'],[20,'20問'],[30,'30問']])}</div>
-    <div class="srow col"><div class="t"><b>受験する回</b><span>ホームに試験日までの日数と申込期間を表示します</span></div>
-      <select id="examSel" aria-label="受験する回"><option value="auto" ${ex.id==='auto'?'selected':''}>次の試験（自動）</option>${EXAMS.map(e=>`<option value="${e.id}" ${ex.id===e.id?'selected':''} ${e.date<today?'disabled':''}>${esc(e.label)}（${e.date}）${e.date<today?'・終了':''}</option>`).join('')}<option value="custom" ${ex.id==='custom'?'selected':''}>日付を指定する</option></select>
-      ${ex.id==='custom'?`<input type="date" id="examDate" value="${esc(ex.d)}" aria-label="試験日">`:''}
-      <span class="note" style="margin:0">公式に発表された回だけを載せています（${EXAMS_CHECKED} 時点）。次の回が未発表のときは日付を指定してください。</span></div>
+    <div class="srow col"><div class="t"><b>試験日</b><span>ホームに試験日までの日数を表示します</span></div>
+      <input type="date" id="examDate" value="${esc(ex?ex.date:'')}" aria-label="試験日"></div>
+    <div class="srow col"><div class="t"><b>申込締切（任意）</b><span>入れると、締切まではホームに締切までの日数も表示します</span></div>
+      <input type="date" id="applyDate" value="${esc(ex?ex.applyEnd:'')}" aria-label="申込締切"></div>
+    <div class="srow"><div class="t"><span>日程は<a href="${EXAM_URL}" target="_blank" rel="noopener">日本規格協会の試験日程のページ</a>で確認できます。</span></div>${ex?'<button class="btn ghost sm" data-examclear>消す</button>':''}</div>
   </div>
   <div class="setcard"><h3>通知</h3>
     ${app?`<div class="srow"><div class="t"><b>毎日のリマインダー</b><span>指定した時刻に、今日の目標が終わっていなければ通知します</span></div>${sw('remind',rc.on,'毎日のリマインダー')}</div>
@@ -1776,6 +1780,7 @@ $('#streakChip').addEventListener('click',()=>{sfx('tap');streakSheet();});
 $('#setClose').addEventListener('click',()=>{closeSheets();$('#setBtn').focus();});
 $('#setSheet').addEventListener('click',e=>{
   if(e.target.closest('[data-reonb]')){closeSheets();openOnb();return;}
+  if(e.target.closest('[data-examclear]')){setLS('qc2-exam-date','');setLS('qc2-apply-end','');refreshSettings();return;}
   if(e.target.closest('[data-install]')){if(instEvt){const ev=instEvt;instEvt=null;ev.prompt();ev.userChoice.finally(()=>refreshSettings());}return;}
   if(e.target.closest('[data-upd]')){sfx('tap');if(upd.st!=='busy')checkUpdate();return;}
   if(e.target.closest('[data-reload]')){e.preventDefault();location.reload();return;}
@@ -1793,15 +1798,15 @@ $('#setSheet').addEventListener('click',e=>{
   if(k==='goal'){P.goal=+v;persist();}
   sfx('tap');refreshSettings();});
 $('#setSheet').addEventListener('change',e=>{
-  if(e.target.id==='examSel'){try{localStorage.setItem('qc2-exam',e.target.value);}catch(x){}refreshSettings();}
-  if(e.target.id==='examDate'){try{localStorage.setItem('qc2-exam-date',e.target.value);}catch(x){}render();}
+  if(e.target.id==='examDate'){setLS('qc2-exam-date',e.target.value);refreshSettings();}
+  if(e.target.id==='applyDate'){setLS('qc2-apply-end',e.target.value);refreshSettings();}
   if(e.target.id==='remTime'){const [h,m]=e.target.value.split(':').map(Number);const c=remindCfg();c.h=h||0;c.m=m||0;saveRemind(c);toast(`毎日 ${e.target.value} に通知します`);}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOpen())closeSheets();});
 function syncSoundBtn(){}
 
 syncSoundBtn();
-initStore();syncNative();maybeOnb();
+migrateExam();initStore();syncNative();maybeOnb();
 // アプリ版：起動時にリマインダー設定をアプリ側へ渡し直す
 {const c=remindCfg();if(c.on)saveRemind(c);}
 setInterval(countdown,60e3);

@@ -20,7 +20,7 @@ src/
   figs.js         解説の図（SVG）と、問題に合う図の選び方
   formulas.js     公式集（資料タブ）
   syllabus.js     公式レベル表の項目と、各項目に対応する問題の割り当て
-  res.js          バージョン・更新履歴、試験日程、資料タブのリンクと関連規格
+  res.js          バージョン・更新履歴、資料タブのリンクと関連規格
   tables.json     数値表（tools/gen_tables.py で生成）
 tools/
   build.py        src/ をまとめて docs/index.html を生成
@@ -66,7 +66,7 @@ python tools/gen_tables.py     # 数値表を作り直す場合のみ
 
 **計算問題**：`src/gen*.js` に、`{q: 問題文, ch: [正解, 誤答...], ex: 解説}` を返す関数として追加します。選択肢は共通関数 `mc()` で作ると、正解の大小の位置が毎回ランダムになります。正解は必ずアプリ内の数値表（`normUp`・`tVal`・`chiVal`・`fVal`・`CC`）から計算してください（表を引いた値と正解がずれないようにするため）。追加したら `tests/verify*.py` に独立の検算を足してください。
 
-**試験日程**：`src/res.js` の `EXAMS` に、日本規格協会が公式に発表した回だけを追加します。
+**試験日**：アプリには収録せず、利用者が設定で日付を入れます（保存先は localStorage の `qc2-exam-date`・`qc2-apply-end`）。試験回が変わってもアプリの更新は不要です。
 
 ## Android アプリ
 
