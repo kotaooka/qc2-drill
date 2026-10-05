@@ -38,6 +38,9 @@ h2{font-family:var(--f-disp);font-size:1.15rem;margin:24px 0 10px;text-wrap:bala
 .kpi .v small{font-size:.8rem;color:var(--muted);font-weight:400}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--accent);background:var(--accent);color:var(--card);border-radius:4px;padding:10px 16px;font-weight:700;cursor:pointer;min-height:44px}
 .btn.ghost{background:transparent;color:var(--accent)}
+.fgrp{padding:0;margin-bottom:10px;overflow:hidden}.fgrp summary{padding:14px 16px;font-weight:700;cursor:pointer;min-height:44px;box-sizing:border-box}
+.frow{padding:10px 16px;border-top:1px solid var(--line)}.frow .fn{font-size:.82rem;color:var(--muted);font-weight:700}
+.frow .ff{font-size:1rem;margin-top:2px;line-height:1.6;overflow-wrap:anywhere}.frow .fd{font-size:.8rem;color:var(--muted);margin-top:2px}
 a.btn{text-decoration:none}
 .btn.danger{background:transparent;border-color:var(--ucl);color:var(--ucl)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
@@ -621,7 +624,7 @@ function fitSets(pool,target){
 }
 
 // ===== 進捗の保存（アカウント保存 → 使えなければこの端末に保存） =====
-const EMPTY=()=>({stats:{},sessions:[],mocks:[],reports:[],daily:{},goal:10,path:{},chap:{}});
+const EMPTY=()=>({stats:{},sessions:[],mocks:[],reports:[],marks:{},daily:{},goal:10,path:{},chap:{}});
 let P=EMPTY();
 const store={mode:'local',db:null,ref:null,busy:false,dirty:false};
 function loadLocal(){try{const s=localStorage.getItem('qc2-progress');if(s)P=Object.assign(EMPTY(),JSON.parse(s));}catch(e){}}
@@ -794,6 +797,7 @@ function finishPath(){
 
 // ===== アイコン =====
 const ICON={
+ star:'<svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg>',
  home:'<svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20h-5.5v-5.5h-5V20H4z"/></svg>',
  road:'<svg viewBox="0 0 24 24"><ellipse cx="7" cy="18" rx="3" ry="2.2"/><ellipse cx="17" cy="12" rx="3" ry="2.2"/><ellipse cx="7" cy="6" rx="3" ry="2.2"/><path d="M9.6 16.8 14.4 13.2M14.4 10.8 9.6 7.2"/></svg>',
  practice:'<svg viewBox="0 0 24 24"><path d="M5 19h4L19.5 8.5l-4-4L5 15z"/><path d="m13.5 6.5 4 4"/></svg>',
@@ -826,7 +830,7 @@ let lastSyl=null;
 let lastCardKey='';
 
 const NAV=[['home','ホーム'],['road','ロード'],['practice','演習'],['stats','成績'],['resg','資料']];
-const navKey=v=>v==='drill'||v==='mock'?'practice':v==='res'||v==='tables'?'resg':v;
+const navKey=v=>v==='drill'||v==='mock'?'practice':v==='res'||v==='tables'||v==='formulas'?'resg':v;
 function renderNav(){
   const k=navKey(view);
   $('#tabs .in').innerHTML=NAV.map(([id,l])=>`<button role="tab" data-nav="${id}" aria-selected="${k===id}"><span class="pill">${ICON[id==='resg'?'res':id]}</span>${l}</button>`).join('');
@@ -834,7 +838,7 @@ function renderNav(){
 // 画面を切り替える。push=true のときは端末の「戻る」で前の画面に戻れるよう履歴に積む
 function setView(v,push=true){
   if(v==='practice')v=practiceSub;if(v==='resg')v=resSub;
-  if(v==='drill'||v==='mock')practiceSub=v;if(v==='res'||v==='tables')resSub=v;
+  if(v==='drill'||v==='mock')practiceSub=v;if(v==='res'||v==='tables'||v==='formulas')resSub=v;
   if(push&&v!==view)try{history.pushState({v},'');}catch(e){}
   view=v;render();window.scrollTo(0,0);
 }
@@ -867,6 +871,7 @@ function render(){
   else if(view==='mock')m.innerHTML=mock?mockHTML():mockStartHTML();
   else if(view==='stats')m.innerHTML=statsHTML();
   else if(view==='tables')m.innerHTML=subtabs('res')+tablesHTML('main');
+  else if(view==='formulas')m.innerHTML=subtabs('res')+formulasHTML();
   else if(view==='res')m.innerHTML=subtabs('res')+resHTML();
   if(quiz||mock)saveSession();
   // 次の問題に進んだときだけ、カードを右から滑り込ませる
@@ -877,7 +882,7 @@ function render(){
 }
 
 function subtabs(g){
-  const L=g==='practice'?[['drill','分野別演習'],['mock','模擬試験']]:[['res','資料'],['tables','数値表']];
+  const L=g==='practice'?[['drill','分野別演習'],['mock','模擬試験']]:[['res','資料'],['formulas','公式集'],['tables','数値表']];
   return `<div class="subtabs" role="tablist">${L.map(([v,l])=>`<button data-v2="${v}" aria-pressed="${view===v}">${l}</button>`).join('')}</div>`;
 }
 // 今日の目標の円グラフ（SVG）
@@ -925,6 +930,8 @@ function homeHTML(){
   <h2>ほかの演習</h2>
   <div class="panel list">
     ${dueIds().length?`<button class="lrow" ${cont.a}><span class="ic">${ICON.flag}</span><span><b>学習ロードの続き</b><span>${esc(cont.t)}</span></span>${ICON.chev}</button>`:''}
+    ${(()=>{const m=markedItems(),n=m.filter(i=>i.kind!=='x').length+new Set(m.filter(i=>i.kind==='x').map(i=>i.set)).size;
+      return n?`<button class="lrow" data-act="marks"><span class="ic">${ICON.star}</span><span><b>あとで見る</b><span>登録した${n}問（大問は1問と数える）</span></span>${ICON.chev}</button>`:'';})()}
     <button class="lrow" data-act="quick"><span class="ic">${ICON.bolt}</span><span><b>全分野から10問</b><span>計算・知識をランダムに</span></span>${ICON.chev}</button>
     <button class="lrow" data-act="dai"><span class="ic">${ICON.sheet}</span><span><b>本試験形式</b><span>大問の穴埋め・正誤</span></span>${ICON.chev}</button>
     <button class="lrow" data-act="gomock"><span class="ic">${ICON.timer}</span><span><b>模擬試験</b><span>50問・90分で合否判定</span></span>${ICON.chev}</button>
@@ -1195,8 +1202,30 @@ function mockResultHTML(){
 // 問題や解説の誤りに気づいたらメモを残す。成績タブで一覧・コピーできる（作成者への送信機能はない）
 function reportBox(it){
   const done=(P.reports||[]).some(r=>r.id===it.id&&r.q===it.q);
-  if(quiz&&quiz.reportFor===quiz.i)return `<div class="report"><label class="lbl" for="rpNote">どこが誤りだと思うか</label><textarea id="rpNote" rows="3" placeholder="例：解説の計算で 0.632 は 0.6325 の丸めでは？"></textarea><div class="actions"><button class="btn sm" data-act="rpsave">保存</button><button class="btn ghost sm" data-act="rpcancel">やめる</button></div></div>`;
-  return `<div class="actions" style="margin-top:10px"><button class="btn ghost sm" data-act="rpopen">${done?'報告済み（追加で報告）':'誤りを報告'}</button></div>`;
+  if(quiz&&quiz.reportFor===quiz.i)return `<div class="report"><label class="lbl" for="rpNote">どこが誤りだと思うか</label><textarea id="rpNote" rows="3" placeholder="例：解説の計算で 0.632 は 0.6325 の丸めでは？"></textarea><div class="actions"><a class="btn sm" data-gh="form" href="${esc(ghIssueURL(it,''))}" target="_blank" rel="noopener">GitHub で報告</a><button class="btn ghost sm" data-act="rpsave">端末に保存</button><button class="btn ghost sm" data-act="rpcancel">やめる</button></div><p class="note" style="margin:6px 0 0">「GitHub で報告」は、問題の内容を書き込んだ報告ページを開きます（GitHub のアカウントが必要）。アカウントがなければ「端末に保存」して、成績タブからコピーして送ってください。</p></div>`;
+  const mk=isMarked(it);
+  return `<div class="actions" style="margin-top:10px"><button class="btn ghost sm" data-act="mark" aria-pressed="${mk}">${mk?'★ あとで見る（登録済み）':'☆ あとで見る'}</button><button class="btn ghost sm" data-act="rpopen">${done?'報告済み（追加で報告）':'誤りを報告'}</button></div>`;
+}
+// ===== 誤りの報告（GitHub の Issue 作成ページを、内容を書き込んだ状態で開く） =====
+function ghIssueURL(it,note){
+  const cut=(t,n)=>{t=String(t||'');return t.length>n?t.slice(0,n)+'…':t;};
+  const ex=Array.isArray(it.ex)?it.ex.join(' '):it.ex;
+  const body=[`- ID：${it.id}`,`- 分野：${CATS[it.cat]?CATS[it.cat].name:it.cat}`,`- 版：v${APP.version}（${APPB()?'Android アプリ':'Web 版'}）`,'',
+    '### 問題文',cut(it.q,700),'','### 選択肢',it.choices.map((c,j)=>`${j===it.ans?'**（正答）**':'-'} ${c}`).join('\n'),'',
+    '### 解説',cut(ex,400),'','### どこが誤りだと思うか',note||'（ここに書いてください）'].join('\n');
+  const title=`[問題の誤り] ${it.id}：${cut(String(it.q).replace(/\s+/g,' '),40)}`;
+  return `${REPO.page}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+}
+// ===== あとで見る（ブックマーク）。大問は大問ごとまとめて登録する =====
+const markIds=it=>it.kind==='x'?SETS[it.set].ids.slice():[it.id];
+const isMarked=it=>!!(P.marks&&P.marks[it.id]);
+function toggleMark(it){P.marks=P.marks||{};const on=!isMarked(it);markIds(it).forEach(id=>{if(on)P.marks[id]=Date.now();else delete P.marks[id];});persist();
+  toast(on?'「あとで見る」に登録しました（ホームから解けます）':'「あとで見る」から外しました');}
+const markedItems=()=>Object.keys(P.marks||{}).map(id=>BYID[id]).filter(Boolean);
+function startMarks(){
+  const all=markedItems(),d=all.filter(it=>it.kind!=='x'),xs=all.filter(it=>it.kind==='x');
+  const list=shuffle(d.map(instance)).concat(xs.length?buildSets(xs,xs.length,false):[]);
+  if(list.length){quiz=null;startQuiz(list,'あとで見る');}
 }
 function reportsHTML(){
   const R=P.reports||[];
@@ -1273,6 +1302,11 @@ function tablesHTML(where){
     body=`<table class="nt"><thead><tr><th>N</th><th>5%</th><th>1%</th><th>N</th><th>5%</th><th>1%</th></tr></thead><tbody>${rows.join('')}</tbody></table><p class="note">符号検定表（両側）。少ないほうの個数がこの値以下なら有意。系列相関（大波・小波）の判定に使う。二項分布 B(N, 0.5) から算出。</p>`;}
   return `<div class="seg" style="flex-wrap:wrap;margin-bottom:10px">${tabs.map(([k,l])=>`<button data-tt="${k}" data-where="${where}" aria-pressed="${tableTab===k}">${l}</button>`).join('')}</div><div class="tblwrap">${body}</div>`;
 }
+// ===== 公式集 =====
+function formulasHTML(){
+  return `<h2>公式集</h2><p class="note" style="margin-top:0">計算問題でよく使う公式です。数値表は「数値表」タブ、計算は問題画面の電卓を使ってください。</p>
+  ${FORMULAS.map((g,i)=>`<details class="panel fgrp"${i===0?' open':''}><summary>${esc(g.h)}</summary>${g.items.map(([n,f,d])=>`<div class="frow"><div class="fn">${esc(n)}</div><div class="ff">${f.split('、').map(x=>`<div>${esc(x)}</div>`).join('')}</div>${d?`<div class="fd">${esc(d)}</div>`:''}</div>`).join('')}</details>`).join('')}`;
+}
 // ===== 資料 =====
 const A=(t,u)=>`<a href="${u}" target="_blank" rel="noopener">${esc(t)}</a>`;
 // 解説の下に出す「関連規格」の1行。タップで資料タブの該当分野へ移動する
@@ -1327,6 +1361,10 @@ $('#sheet').addEventListener('click',e=>{const b=e.target.closest('[data-tt]');i
 
 // ===== 操作 =====
 $('#main').addEventListener('click',e=>{
+  const gh=e.target.closest('a[data-gh]');
+  if(gh&&quiz){const it=quiz.list[quiz.i],note=(($('#rpNote')||{}).value||'').slice(0,500);gh.href=ghIssueURL(it,note);
+    (P.reports=P.reports||[]).push({id:it.id,cat:it.cat,t:Date.now(),q:it.q,a:String(it.choices[it.ans]),note,gh:true});
+    P.reports=P.reports.slice(-100);quiz.reportFor=null;persist();setTimeout(()=>{render();toast('報告ページを開きました（端末にも保存しました）');},0);return;}
   const t=e.target.closest('button');if(!t)return;const d=t.dataset;
   if(d.tt){tableTab=d.tt;render();return;}
   if(d.res){openRes(d.res);return;}
@@ -1362,6 +1400,8 @@ $('#main').addEventListener('click',e=>{
   switch(d.act){
     case 'quick':startQuiz(mixReview(buildList(ITEMS.filter(i=>i.kind!=='x'),10,false),3),'全分野10問');break;
     case 'review':startReview();break;
+    case 'marks':startMarks();break;
+    case 'mark':{const it=quiz&&quiz.list[quiz.i];if(it){toggleMark(it);render();}break;}
     case 'dai':startQuiz(buildSets(ITEMS.filter(i=>i.kind==='x'),10,false),'本試験形式');break;
     case 'weak':{const w=weakIds().map(id=>BYID[id]);startQuiz(buildList(w,Math.min(10,w.length),false),'苦手の復習');break;}
     case 'gomock':setView('mock');break;
@@ -1407,12 +1447,12 @@ $('#main').addEventListener('click',e=>{
     case 'ioclose':store.io=null;store.ioErr='';render();break;
     case 'impdo':{try{const d=JSON.parse(($('#ioText')||{}).value||'');
         if(!d||typeof d.stats!=='object'||!Array.isArray(d.sessions))throw new Error();
-        P=Object.assign(EMPTY(),{stats:d.stats,sessions:d.sessions.slice(-30),mocks:Array.isArray(d.mocks)?d.mocks:[],reports:Array.isArray(d.reports)?d.reports:[],daily:d.daily&&typeof d.daily==='object'?d.daily:{},goal:+d.goal||10,path:d.path||{},chap:d.chap||{}});
+        P=Object.assign(EMPTY(),{stats:d.stats,sessions:d.sessions.slice(-30),mocks:Array.isArray(d.mocks)?d.mocks:[],reports:Array.isArray(d.reports)?d.reports:[],marks:d.marks&&typeof d.marks==='object'?d.marks:{},daily:d.daily&&typeof d.daily==='object'?d.daily:{},goal:+d.goal||10,path:d.path||{},chap:d.chap||{}});
         store.io=null;store.ioErr='';persist();toast('読み込みました（'+Object.keys(P.stats).length+'問分の記録）');render();}
       catch(e){store.ioErr='読み込めませんでした。書き出したテキストをそのまま貼り付けてください。';render();}break;}
     case 'resetask':store.resetAsk=true;render();break;
     case 'resetno':store.resetAsk=false;render();break;
-    case 'resetdo':P=Object.assign(EMPTY(),{reports:P.reports||[],goal:P.goal||10});store.resetAsk=false;persist();render();break;
+    case 'resetdo':P=Object.assign(EMPTY(),{reports:P.reports||[],marks:P.marks||{},goal:P.goal||10});store.resetAsk=false;persist();render();break;
   }
 });
 // ===== 効果音（Web Audioで合成。音声ファイルは使わない） =====
@@ -1673,6 +1713,7 @@ function settingsHTML(){
   </div>
   <div class="setcard"><h3>このアプリについて</h3>
     <div class="srow"><div class="t"><b>はじめの案内</b><span>初回起動時の設定（受験日・目標・表示・通知）をもう一度行う</span></div><button class="btn ghost sm" data-reonb>表示する</button></div>
+    ${pwaRow()}
     <div class="srow"><div class="t"><b>バージョン</b><span>${APP.date} 更新</span></div><span class="ver-big" style="font-size:1.1rem">v${APP.version}</span></div>
     <div class="srow"><div class="t"><b>更新の確認</b><span id="updState">${updHTML()}</span></div><button class="btn ghost sm" data-upd>確認する</button></div>
     <div class="srow"><div class="t"><b>GitHub のページ</b><span>使い方・変更内容・不具合の報告</span></div><a class="btn ghost sm" href="${REPO.page}" target="_blank" rel="noopener">開く</a></div>
@@ -1680,6 +1721,24 @@ function settingsHTML(){
     ${H.length>3?`<details class="oldhist"><summary>以前の変更（${H.length-3}件）</summary>${H.slice(3).map(([v,d,t])=>`<div class="hist"><b>v${v}</b><span class="d">${d}</span><span>${esc(t)}</span></div>`).join('')}</details>`:''}</div>
   </div>`;
 }
+// ===== ホーム画面に追加（PWA：Web 版のみ） =====
+let instEvt=null;
+const isStandalone=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}catch(e){return false;}};
+const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEvt=e;if($('#setSheet')&&sheetOpen())refreshSettings();});
+window.addEventListener('appinstalled',()=>{instEvt=null;toast('ホーム画面に追加しました');});
+// Service Worker は https の Web 版だけで登録する（Android アプリ・手元のファイルでは登録しない）
+if('serviceWorker' in navigator&&location.protocol==='https:'&&!window.QC2App&&location.hostname!=='appassets.androidplatform.net'){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
+function pwaRow(){
+  if(APPB())return '';
+  const t='<div class="t"><b>ホーム画面に追加</b><span>';
+  if(isStandalone())return `<div class="srow">${t}ホーム画面から起動しています。一度開いたあとは、通信がなくても使えます。</span></div></div>`;
+  if(instEvt)return `<div class="srow">${t}アプリのように起動でき、通信がなくても使えます</span></div><button class="btn ghost sm" data-install>追加する</button></div>`;
+  if(isIOS())return `<div class="srow">${t}Safari の共有ボタン（□に↑）→「ホーム画面に追加」を選ぶと、アプリのように起動でき、通信がなくても使えます。</span></div></div>`;
+  return `<div class="srow">${t}ブラウザのメニューから「ホーム画面に追加」または「インストール」を選ぶと、アプリのように起動でき、通信がなくても使えます。</span></div></div>`;
+}
+
 // ===== 更新の確認（GitHub の最新リリースと比べる） =====
 const REPO={page:'https://github.com/kotaooka/qc2-drill',api:'https://api.github.com/repos/kotaooka/qc2-drill/releases/latest'};
 let upd={st:'idle'};
@@ -1717,6 +1776,7 @@ $('#streakChip').addEventListener('click',()=>{sfx('tap');streakSheet();});
 $('#setClose').addEventListener('click',()=>{closeSheets();$('#setBtn').focus();});
 $('#setSheet').addEventListener('click',e=>{
   if(e.target.closest('[data-reonb]')){closeSheets();openOnb();return;}
+  if(e.target.closest('[data-install]')){if(instEvt){const ev=instEvt;instEvt=null;ev.prompt();ev.userChoice.finally(()=>refreshSettings());}return;}
   if(e.target.closest('[data-upd]')){sfx('tap');if(upd.st!=='busy')checkUpdate();return;}
   if(e.target.closest('[data-reload]')){e.preventDefault();location.reload();return;}
   const ts=e.target.closest('[data-test-sound]');if(ts){const was=soundOn;soundOn=true;unlockAudio();sfx('right');soundOn=was;setTimeout(()=>{const el=$('#audState');if(el)el.textContent='状態：'+audioState()+'。鳴らないときは、端末の「メディアの音量」を上げてください（着信音の音量とは別です）。';},300);return;}

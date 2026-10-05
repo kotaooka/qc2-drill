@@ -25,7 +25,7 @@ par=1-0.1*0.1; sysR=0.95*par
 exp['m10']=[f(par,2),f(sysR,3),'800','1.25×10⁻³',f(math.exp(-100/800),3)]
 B=stats.binom(20,0.05)
 exp['m12']=[f(B.mean(),2),f(B.var(),2),f(B.pmf(0),3),f(B.cdf(1),3),f(math.exp(-1),3)]
-Se2=69.0-30.0-18.0-9.0; Ve2=Se2/12
+Se2=75.0-30.0-18.0-9.0; Ve2=Se2/12
 exp['m15']=[f(Se2,1),'6','12',f(Ve2,2),f((9.0/6)/Ve2,2),'有意でない' if (9.0/6)/Ve2<stats.f.isf(0.05,6,12) else '有意である',f((30.0/2)/Ve2,1)]
 N=21+6; cv=max(r for r in range(N) if stats.binom.cdf(r,N,0.5)<=0.025)
 exp['m16']=['中央値','除く',str(N),str(cv),'有意であり、正の大波の相関がある' if 6<=cv else '有意でない','差の符号']

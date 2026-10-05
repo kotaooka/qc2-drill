@@ -12,7 +12,7 @@ m = re.search(r"<title>.*?</title>", body)
 TITLE = m.group(0) if m else ""
 body = body.replace(TITLE, "", 1)
 body = body.replace("/*TABLES*/", r("tables.json"))
-body = body.replace("/*BANK*/", "".join(r(f) for f in ["bank.js","bank2.js","bank3.js","bank4.js","bank5.js","bank6.js","bank7.js","dai.js","dai2.js","dai3.js","res.js","syllabus.js","path.js","figs.js"]))
+body = body.replace("/*BANK*/", "".join(r(f) for f in ["bank.js","bank2.js","bank3.js","bank4.js","bank5.js","bank6.js","bank7.js","dai.js","dai2.js","dai3.js","res.js","syllabus.js","path.js","figs.js","formulas.js"]))
 body = body.replace("/*GEN*/", "".join(r(f) for f in ["gen.js","gen2.js","gen3.js"]))
 
 # 検索結果・SNS 共有で表示される説明（GitHub Pages 用）
@@ -24,6 +24,14 @@ META = (
     f'<meta name="description" content="{DESC}">'
     f'<link rel="canonical" href="{URL}">'
     '<meta name="theme-color" content="#1D5C7A">'
+    # ホーム画面に追加（PWA）用：manifest・アイコン。Service Worker の登録は画面側（template.html）で行う
+    '<link rel="manifest" href="manifest.webmanifest">'
+    '<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">'
+    '<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">'
+    '<meta name="apple-mobile-web-app-capable" content="yes">'
+    '<meta name="mobile-web-app-capable" content="yes">'
+    '<meta name="apple-mobile-web-app-title" content="QC2級ドリル">'
+    '<meta name="apple-mobile-web-app-status-bar-style" content="default">'
     # Google Search Console の所有権確認
     '<meta name="google-site-verification" content="xLVjdnAB_uJxX1D1qEyI_qkFT_PrQzqFOiInbc6AcJU">'
     '<meta property="og:type" content="website">'

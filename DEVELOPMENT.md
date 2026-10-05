@@ -4,7 +4,9 @@
 
 ## 構成
 
-画面・問題・数値表は `src/` に分かれており、`tools/build.py` で1つの HTML（`docs/index.html`）にまとめます。この HTML が Web 版（GitHub Pages）で、Android アプリにも同梱されます。画面側は外部ライブラリを使わず、解答記録は端末内（localStorage）だけに保存します。外部と通信するのは、設定の「更新の確認」で GitHub の API（最新リリースの版名）を読むときだけです。
+画面・問題・数値表は `src/` に分かれており、`tools/build.py` で1つの HTML（`docs/index.html`）にまとめます。この HTML が Web 版（GitHub Pages）で、Android アプリにも同梱されます。画面側は外部ライブラリを使わず、解答記録は端末内（localStorage）だけに保存します。外部と通信するのは、設定の「更新の確認」で GitHub の API（最新リリースの版名）を読むときだけです（「GitHub で報告」や各種リンクは、ブラウザで GitHub などのページを開くだけです）。
+
+Web 版は `docs/sw.js`（Service Worker）で、一度開いたあとはオフラインでも起動できます。ページ本体は通信を優先して取得するので、`docs/index.html` を更新しても `sw.js` を書き換える必要はありません。保存するファイルを増やしたときだけ、`sw.js` の `CORE` と `CACHE` の名前（`qc2-drill-v1` → `v2`）を変えてください。Android アプリでは Service Worker を登録しません。
 
 ```
 src/
@@ -16,6 +18,7 @@ src/
   dai.js〜dai3.js 本試験形式の問題（大問の穴埋め・正誤、複合大問、事例）
   path.js         学習ロードの章・ステージ・ストーリー
   figs.js         解説の図（SVG）と、問題に合う図の選び方
+  formulas.js     公式集（資料タブ）
   syllabus.js     公式レベル表の項目と、各項目に対応する問題の割り当て
   res.js          バージョン・更新履歴、試験日程、資料タブのリンクと関連規格
   tables.json     数値表（tools/gen_tables.py で生成）
@@ -29,6 +32,7 @@ tests/
   calcbias.js     計算問題で正解が選択肢の何番目の大きさかの分布を計測
 docs/
   index.html      ビルド結果（GitHub Pages の公開対象、APK にも同梱）
+  manifest.webmanifest, sw.js, icons/  Web 版をホーム画面に追加（PWA）するためのファイル（手で管理）
 android/          Android アプリ（WebView で docs/index.html を表示）
 screenshots/      README 用の画面写真
 ```
