@@ -4,7 +4,7 @@
 
 ## 構成
 
-画面・問題・数値表は `src/` に分かれており、`tools/build.py` で1つの HTML（`docs/index.html`）にまとめます。この HTML が Web 版（GitHub Pages）で、Android アプリにも同梱されます。外部ライブラリやサーバーは使っていません。
+画面・問題・数値表は `src/` に分かれており、`tools/build.py` で1つの HTML（`docs/index.html`）にまとめます。この HTML が Web 版（GitHub Pages）で、Android アプリにも同梱されます。画面側は外部ライブラリを使わず、解答記録は端末内（localStorage）だけに保存します。外部と通信するのは、設定の「更新の確認」で GitHub の API（最新リリースの版名）を読むときだけです。
 
 ```
 src/
@@ -35,12 +35,12 @@ screenshots/      README 用の画面写真
 
 ## ビルドとテスト
 
-必要なもの：Python 3（scipy）、Node.js
+必要なもの：Python 3（`pip install scipy`）、Node.js。コマンドはリポジトリ直下で実行します。
 
 ```powershell
 python tools/build.py          # docs/index.html を生成
-node tests/test.js             # 生成・整合性の検査
-python tests/verify.py         # 計算問題の正解の照合
+node tests/test.js             # 生成・整合性の検査（検算用の tests/samples.json もここで作る）
+python tests/verify.py         # 計算問題の正解の照合（test.js の後に実行）
 python tests/verify3.py
 python tests/verify_dai.py     # 大問の正解の照合
 python tools/gen_tables.py     # 数値表を作り直す場合のみ
@@ -102,17 +102,19 @@ python tools/gen_tables.py     # 数値表を作り直す場合のみ
 [Convert]::ToBase64String([IO.File]::ReadAllBytes("E:\path\to\qc2.keystore")) | Set-Clipboard
 ```
 
-手元でビルドする場合は、`android/keystore.properties`（.gitignore 済み）に `storeFile`・`storePassword`・`keyAlias`・`keyPassword` を書きます。鍵をなくすと、既存のアプリに上書き更新できなくなります。
+手元でビルドする場合は、`android/keystore.properties`（.gitignore 済み）に `storeFile`・`storePassword`・`keyAlias`・`keyPassword` を書きます。`storeFile` は絶対パスで書いてください（相対パスは `android/app/` から見た位置になります）。鍵をなくすと、既存のアプリに上書き更新できなくなります。
 
 ## リリース手順
 
 1. `src/res.js` の `APP.version`・`APP.date`・`history` を更新する（1行で簡潔に）。
 2. `python tools/build.py` を実行し、テストを通す。
 3. `git add -A`、`git commit`、`git push`。
-4. GitHub の Releases で新しいタグ（例 `v2.0.2`）を作って公開する。数分後に `qc2-drill.apk` が自動で添付される。
+4. GitHub の Releases で、`APP.version` に `v` を付けたタグ（例：`APP.version` が `2.0.3` なら `v2.0.3`）を作って公開する。数分後に `qc2-drill.apk` が自動で添付される。
+
+タグ名は必ず `APP.version` と一致させてください。アプリの「更新の確認」は最新リリースのタグ名と `APP.version` を比べるため、ずれていると、最新版でも「新しい版があります」と表示され続けます。タグは `v` と数字・ピリオドだけにします（`v2.0.3-beta` などは版名として読めません）。
 
 Web 版（GitHub Pages）は、`docs/index.html` を push した時点で更新されます。
 
 ## バージョン
 
-`src/res.js` の `APP.version` で管理し、アプリの設定画面と最下部に表示しています。
+`src/res.js` の `APP.version` で管理し、アプリの設定画面と最下部に表示しています。形式は `メジャー.マイナー.パッチ`（例 `2.0.3`）で、更新の確認では数字ごとに大小を比べます（`2.0.10` は `2.0.9` より新しい）。
