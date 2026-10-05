@@ -91,7 +91,8 @@ g_varsamp:{cat:'samp',f(){
   ch:combo(L(XU,ok),[L(XU,!ok),L(SU+k*s,xb<=SU+k*s),L(SU-k*s/sq(n),xb<=SU-k*s/sq(n)),L(SU-k*s*sq(n)/3,xb<=SU-k*s*sq(n)/3)]),
   ex:`上限合格判定値 X̄U＝SU−kσ＝${SU}−${k.toFixed(2)}×${s}＝${fx(XU,3)}。x̄＝${xb}${ok?'≦':'＞'}X̄U なので${ok?'合格':'不合格'}。下限規格の場合は X̄L＝SL＋kσ で、x̄≧X̄L なら合格。`};}},
 g_two_nr:{cat:'doe',f(){
-  const a=rnd(3,4),b=rnd(3,5),SA=rnd(20,80)/2,SB=rnd(10,50)/2,Se=rnd(6,24)/2;const ST=SA+SB+Se;const fA=a-1,fe=(a-1)*(b-1);const F0=(SA/fA)/(Se/fe),c=fVal(fA,fe,0.05);const sig=F0>=c;
+  let a,b,SA,SB,Se,fA,fe,F0,c;do{a=rnd(3,4);b=rnd(3,5);SA=rnd(20,80)/2;SB=rnd(10,50)/2;Se=rnd(6,24)/2;fA=a-1;fe=(a-1)*(b-1);F0=(SA/fA)/(Se/fe);c=fVal(fA,fe,0.05);}while(Math.abs(F0-c)<0.05);
+  const ST=SA+SB+Se;const sig=F0>=c;
   const L=(v,g)=>`F0＝${fx(v,2)}、因子Aは${g?'有意':'有意でない'}`;
   return{q:`因子A ${a}水準、因子B ${b}水準で、繰返しのない二元配置実験を行った。ST＝${ST}、SA＝${SA}、SB＝${SB} である。因子Aの分散比と判定（有意水準5%）として正しいものはどれか。`,
   ch:combo(L(F0,sig),[L(F0,!sig),L((SA/fA)/(Se/(a*b-1)),(SA/fA)/(Se/(a*b-1))>=c),L(SA/Se,SA/Se>=c),L((SA/fA)/((Se+SB)/(fe+b-1)),false)]),

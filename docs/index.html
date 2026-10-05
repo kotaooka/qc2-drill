@@ -38,6 +38,15 @@ h2{font-family:var(--f-disp);font-size:1.15rem;margin:24px 0 10px;text-wrap:bala
 .kpi .v small{font-size:.8rem;color:var(--muted);font-weight:400}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--accent);background:var(--accent);color:var(--card);border-radius:4px;padding:10px 16px;font-weight:700;cursor:pointer;min-height:44px}
 .btn.ghost{background:transparent;color:var(--accent)}
+.odock{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:4;margin:12px -12px 0;padding:6px 12px 8px;background:var(--paper);border-top:1px solid var(--line);box-shadow:0 -8px 14px -10px rgba(0,0,0,.35);border-radius:12px 12px 0 0}
+.odock .ghint{position:static;margin:0 0 6px;padding:6px 10px;font-size:.85rem}
+.odock .opts{max-height:min(30vh,250px);overflow-y:auto;overscroll-behavior:contain;gap:6px;padding:2px}
+.odock .opts.many{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.odock .opts.many.short{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+.odock .opt{min-height:44px;padding:4px 6px;gap:5px;grid-template-columns:24px minmax(0,1fr);border-bottom-width:3px;font-size:.9rem;line-height:1.25}
+.odock .opt .bub{width:22px;height:18px;font-size:.68rem}
+.odock .opt .used{display:inline;margin-left:3px;font-size:.7rem}
+.mstart{display:grid;gap:8px}.mstart .btn{flex-direction:column;align-items:flex-start;gap:2px;text-align:left;min-height:56px}.mstart .btn span{font-weight:400;font-size:.85rem;opacity:.85}
 .fgrp{padding:0;margin-bottom:10px;overflow:hidden}.fgrp summary{padding:14px 16px;font-weight:700;cursor:pointer;min-height:44px;box-sizing:border-box}
 .frow{padding:10px 16px;border-top:1px solid var(--line)}
 .fsym{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:0;padding:10px 16px 12px;background:var(--accent-soft);border-top:1px solid var(--line);font-size:.85rem}
@@ -116,6 +125,13 @@ a.btn{text-decoration:none}
 .timer{font-family:var(--f-num);font-size:1.1rem;font-weight:600;font-variant-numeric:tabular-nums}
 .timer.low{color:var(--ucl)}
 .qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:4px;margin-top:10px}
+.msec{margin-top:12px}.msech{display:flex;align-items:baseline;gap:8px;font-weight:700;font-size:.9rem;color:var(--accent);padding:4px 0;border-bottom:2px solid var(--accent)}.msech span{font-size:.78rem;color:var(--muted);font-weight:400}
+.mrow{padding:8px 0;border-bottom:1px solid var(--line)}.mrow.cur{background:var(--accent-soft);margin:0 -10px;padding:8px 10px;border-radius:8px}
+.mrow .qgrid{margin-top:6px;grid-template-columns:repeat(auto-fill,minmax(40px,1fr))}
+.mhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;background:none;border:0;padding:4px 0;text-align:left;color:var(--ink);font:inherit;cursor:pointer;min-height:36px}
+.mhead b{font-size:.85rem}.mhead .t{font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mhead .cnt{font-size:.78rem;font-family:var(--f-num);padding:2px 8px;border-radius:999px;background:var(--surf2);color:var(--muted);white-space:nowrap}
+.mhead.done .cnt,.mhead.r .cnt{background:var(--ok-soft);color:var(--ok)}.mhead.part .cnt{background:var(--accent-soft);color:var(--accent)}.mhead.w .cnt{background:var(--ucl-soft);color:var(--ucl)}
 .qgrid button{border:1px solid var(--line);background:var(--card);border-radius:3px;padding:4px 0;font-family:var(--f-num);font-size:.75rem;cursor:pointer}
 .qgrid button.done{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .qgrid button.cur{outline:2px solid var(--accent)}
@@ -1377,9 +1393,10 @@ DAI.push(
 );
 // ===== バージョン情報と資料（公式ページ・規格） =====
 const APP = {
-  version: '2.3.0',
+  version: '2.4.0',
   date: '2026-10-05',
   history: [
+    ['2.4.0', '2026-10-05', '模擬試験を「手法だけ」「実践だけ」（各約50問・45分）でも受けられるように。本試験形式の選択肢を画面の下に固定し、スクロールせずに選べるように。模擬試験の問題一覧を分野・大問ごとの表示に'],
     ['2.3.0', '2026-10-05', '模擬試験を本番に合わせ、本試験形式の大問だけで約100問・90分に'],
     ['2.2.0', '2026-10-05', '試験日は一覧から選ぶ方式をやめ、自分で日付を入れる方式に（申込締切も任意で設定可）。公式集に記号の意味と読み方を追加'],
     ['2.1.0', '2026-10-05', 'Web版をホーム画面に追加してオフラインで使えるように。公式集、「あとで見る」、GitHub での誤りの報告を追加。本試験形式の大問を見直して16か所を修正'],
@@ -2292,7 +2309,8 @@ g_varsamp:{cat:'samp',f(){
   ch:combo(L(XU,ok),[L(XU,!ok),L(SU+k*s,xb<=SU+k*s),L(SU-k*s/sq(n),xb<=SU-k*s/sq(n)),L(SU-k*s*sq(n)/3,xb<=SU-k*s*sq(n)/3)]),
   ex:`上限合格判定値 X̄U＝SU−kσ＝${SU}−${k.toFixed(2)}×${s}＝${fx(XU,3)}。x̄＝${xb}${ok?'≦':'＞'}X̄U なので${ok?'合格':'不合格'}。下限規格の場合は X̄L＝SL＋kσ で、x̄≧X̄L なら合格。`};}},
 g_two_nr:{cat:'doe',f(){
-  const a=rnd(3,4),b=rnd(3,5),SA=rnd(20,80)/2,SB=rnd(10,50)/2,Se=rnd(6,24)/2;const ST=SA+SB+Se;const fA=a-1,fe=(a-1)*(b-1);const F0=(SA/fA)/(Se/fe),c=fVal(fA,fe,0.05);const sig=F0>=c;
+  let a,b,SA,SB,Se,fA,fe,F0,c;do{a=rnd(3,4);b=rnd(3,5);SA=rnd(20,80)/2;SB=rnd(10,50)/2;Se=rnd(6,24)/2;fA=a-1;fe=(a-1)*(b-1);F0=(SA/fA)/(Se/fe);c=fVal(fA,fe,0.05);}while(Math.abs(F0-c)<0.05);
+  const ST=SA+SB+Se;const sig=F0>=c;
   const L=(v,g)=>`F0＝${fx(v,2)}、因子Aは${g?'有意':'有意でない'}`;
   return{q:`因子A ${a}水準、因子B ${b}水準で、繰返しのない二元配置実験を行った。ST＝${ST}、SA＝${SA}、SB＝${SB} である。因子Aの分散比と判定（有意水準5%）として正しいものはどれか。`,
   ch:combo(L(F0,sig),[L(F0,!sig),L((SA/fA)/(Se/(a*b-1)),(SA/fA)/(Se/(a*b-1))>=c),L(SA/Se,SA/Se>=c),L((SA/fA)/((Se+SB)/(fe+b-1)),false)]),
@@ -2680,7 +2698,7 @@ function homeHTML(){
   const kp=(lab,v,sub,col)=>`<div class="panel kpi"><div class="lbl">${lab}</div><div class="v" style="color:${col}">${v}<small>${sub}</small></div></div>`;
   const fc=x=>{const p=pct(x.c,x.n);return p==null?'var(--muted)':p>=50?'var(--ok)':'var(--ucl)';};
   const fv=x=>pct(x.c,x.n)==null?'—':pct(x.c,x.n);
-  const last=P.mocks[P.mocks.length-1];
+  const last=P.mocks.filter(m=>!m.kind).slice(-1)[0];
   const st=streakInfo(),ns=nextStage(),ci=curChapter(),ch=PATH[ci],ex=curExam();
   const dd=ex?daysTo(ex.date):null,today=dayKey(new Date());
   const apply=ex&&ex.applyEnd&&today<=ex.applyEnd&&dd>=0?`申込締切 ${md(ex.applyEnd)}（あと${daysTo(ex.applyEnd)}日）`:'';
@@ -2844,6 +2862,10 @@ function grpRange(list,i){
   while(e<list.length&&list[e].kind==='x'&&list[e].set===it.set)e++;
   return[s,e];
 }
+// 選択中の空欄が、上の見出しと下の選択肢の欄のあいだに見えるようにスクロールする
+function showBlank(){const el=document.querySelector('.blank2.act');if(!el)return;
+  const r=el.getBoundingClientRect(),dock=document.querySelector('.odock'),top=72,bottom=dock?dock.getBoundingClientRect().top:innerHeight-90;
+  if(r.top<top||r.bottom>bottom-8)window.scrollBy({top:r.top-(top+Math.max(0,(bottom-top)/3)),behavior:'smooth'});}
 // 未入力の空欄のうち最初のもの（なければ先頭）
 const firstOpen=(list,s,e)=>{for(let j=s;j<e;j++)if(list[j].pick==null)return j;return s;};
 // 大問カード：本文の空欄をタップして選び、下の選択肢で埋める。○×は文ごとに選ぶ
@@ -2864,10 +2886,11 @@ function groupCard(list,s,e,act,reveal,inDrill){
       const cls=['blank2',it.pick!=null?'filled':'',li===act&&!reveal?'act':'',reveal?(ok?'ok':'ng'):''].join(' ');
       return `<button class="${cls}" data-blank="${li}" ${reveal?'disabled':''} aria-label="空欄${n}"><b>（${n}）</b>${it.pick!=null?`<span>${KANA[it.pick]} ${esc(S.opts[it.pick])}</span>`:''}${reveal&&!ok?`<span class="fix">→ ${KANA[it.ans]} ${esc(S.opts[it.ans])}</span>`:''}</button>`;});
     const cur=list[act];
-    body=`<div class="qtext dai">${stem}</div>
-    ${reveal?'':`<div class="ghint"><b>（${cur.k+1}）</b>に入るものを選んでください<span>${filled}／${items.length} 入力済み</span></div>`}
-    <div class="opts many">${S.opts.map((o,j)=>{const used=items.filter(it=>it.pick===j).map(it=>it.k+1);
+    // 解答中は、選択肢を画面の下に固定した欄（odock）に入れ、本文をスクロールしながら選べるようにする
+    const optsHTML=`<div class="opts many${S.opts.every(o=>o.length<=8)?' short':''}">${S.opts.map((o,j)=>{const used=items.filter(it=>it.pick===j).map(it=>it.k+1);
       return `<button class="opt ${!reveal&&cur.pick===j?'sel':''}" data-gpick="${j}" ${reveal?'disabled':''}><span class="bub">${KANA[j]}</span><span class="tx">${esc(o)}${used.length?`<small class="used">${used.map(n=>'（'+n+'）').join('')}</small>`:''}</span></button>`;}).join('')}</div>`;
+    body=`<div class="qtext dai">${stem}</div>
+    ${reveal?optsHTML:`<div class="odock"><div class="ghint"><b>（${cur.k+1}）</b>に入るものを選んでください<span>${filled}／${items.length} 入力済み</span></div>${optsHTML}</div>`}`;
   }
   const exs=reveal?`<div class="fb ${nOk===items.length?'ok':'ng'}"><div class="res">${items.length}問中 ${nOk}問 正解</div>${items.map(it=>{const ok=it.pick===it.ans,L=ox?OXL:KANA;
       return `<div class="gex ${ok?'ok':'ng'}"><b>（${it.k+1}）${ok?'✓':'✕'} 正答 ${L[it.ans]}${ox?'':' '+esc(S.opts[it.ans])}</b><p>${esc(it.ex)}</p></div>`;}).join('')}${figFor(S.title+' '+(S.stem||'')+' '+items.map(x=>x.ex).join(' '))}${refLine(items[0].cat)}${inDrill?reportBox(items[0]):''}</div>`:'';
@@ -2917,15 +2940,22 @@ function quizHTML(){
 
 // ===== 模擬試験 =====
 const MOCK={method:50,practice:50,min:90};  // 本番と同じく約100問（手法・実践それぞれ約50問）を90分で解く
+// 受け方：本番どおり（全体）／手法だけ／実践だけ（それぞれ約50問・45分）
+const MOCK_MODES={full:{label:'本番形式（全体）',fields:['手法','実践'],min:90},'手法':{label:'手法だけ',fields:['手法'],min:45},'実践':{label:'実践だけ',fields:['実践'],min:45}};
 function mockStartHTML(){
   const hist=P.mocks.slice(-5).reverse();
   return subtabs('practice')+`<h2>模擬試験</h2>
   <div class="panel">
-    <p style="margin-top:0">本試験と同じ90分・マークシート形式で、本試験形式の大問だけを約100問（手法・実践それぞれ約${MOCK.method}問）出題します。1問あたり1分弱のペースが必要です。解答中は正誤を表示せず、終了後に合格基準で判定します。</p>
-    <ul style="margin:0 0 12px;padding-left:1.2em"><li>各分野 概ね50%以上</li><li>総合 概ね70%以上</li></ul>
-    <button class="btn" data-act="startmock">開始する（90:00）</button>
+    <p style="margin-top:0">本試験と同じマークシート形式で、本試験形式の大問だけを出題します。本番は約100問を90分で解くので、1問あたり1分弱のペースが必要です。解答中は正誤を表示せず、終了後に判定します。</p>
+    <ul style="margin:0 0 12px;padding-left:1.2em"><li>合格基準：各分野 概ね50%以上、かつ総合 概ね70%以上</li></ul>
+    <div class="mstart">
+      <button class="btn" data-act="startmock" data-mode="full"><b>本番形式</b><span>手法＋実践 約100問・90分</span></button>
+      <button class="btn ghost" data-act="startmock" data-mode="手法"><b>手法だけ</b><span>約50問・45分</span></button>
+      <button class="btn ghost" data-act="startmock" data-mode="実践"><b>実践だけ</b><span>約50問・45分</span></button>
+    </div>
+    <p class="note" style="margin-bottom:0">スマートフォンで通しの90分がつらいときは、手法と実践を分けて受けられます。分けて受けた結果は、その分野の正答率で判定します（本番の総合70%を考えて、70%以上を目安にしてください）。</p>
   </div>
-  ${hist.length?`<h2>受験履歴</h2><div class="panel">${hist.map(h=>`<div class="catrow" style="grid-template-columns:minmax(0,1fr) auto"><span class="nm">${new Date(h.t).toLocaleString('ja-JP',{dateStyle:'short',timeStyle:'short'})}　<b style="color:var(--${h.pass?'ok':'ucl'})">${h.pass?'合格圏':'不合格圏'}</b></span><span class="pc">${h.tot}% / ${h.m}% / ${h.p}%</span></div>`).join('')}<p class="note">総合 / 手法 / 実践</p></div>`:''}`;
+  ${hist.length?`<h2>受験履歴</h2><div class="panel">${hist.map(h=>`<div class="catrow" style="grid-template-columns:minmax(0,1fr) auto"><span class="nm">${new Date(h.t).toLocaleString('ja-JP',{dateStyle:'short',timeStyle:'short'})}　<b style="color:var(--${(h.kind?h.fok:h.pass)?'ok':'ucl'})">${h.kind?(h.fok?'目安クリア':'目安未達'):h.pass?'合格圏':'不合格圏'}</b></span><span class="pc">${h.kind?`${h.kind}だけ ${h.kind==='手法'?h.m:h.p}%`:`${h.tot}% / ${h.m}% / ${h.p}%`}</span></div>`).join('')}<p class="note">本番形式は 総合 / 手法 / 実践。分けて受けた回は、その分野の正答率（目安 70%）。</p></div>`:''}`;
 }
 // 本試験形式の大問を、空欄の合計が lo〜hi 問になるようにセット単位で選ぶ。
 // 解いた回数の少ない大問を優先するので、続けて受けると別の大問が出やすい
@@ -2936,12 +2966,13 @@ function pickSets(pool,lo,hi){
   for(const sid of sids){const n=SETS[sid].ids.length;if(out.length>=lo)break;if(out.length+n<=hi)SETS[sid].ids.forEach(id=>out.push(id));}
   return out;
 }
-function startMock(){
+function startMock(mode){
+  const M=MOCK_MODES[mode]||MOCK_MODES.full;
   const fld=f=>ITEMS.filter(i=>i.kind==='x'&&SETS[i.set].field===f);
-  // 本試験と同じく、大問（穴埋め・正誤）だけで手法・実践それぞれ約50問
-  const ids=[...pickSets(fld('手法'),MOCK.method-2,MOCK.method+4),...pickSets(fld('実践'),MOCK.practice-2,MOCK.practice+4)];
+  // 本試験と同じく、大問（穴埋め・正誤）だけで各分野約50問
+  const ids=M.fields.flatMap(f=>pickSets(fld(f),(f==='手法'?MOCK.method:MOCK.practice)-2,(f==='手法'?MOCK.method:MOCK.practice)+4));
   const list=ids.map(id=>instance(BYID[id]));
-  mock={list,i:0,end:Date.now()+MOCK.min*60e3,done:false,confirm:false};
+  mock={list,i:0,mode:MOCK_MODES[mode]?mode:'full',min:M.min,end:Date.now()+M.min*60e3,done:false,confirm:false};
   tick();render();saveSession();
 }
 let timerId=null;
@@ -2956,7 +2987,7 @@ function mockHTML(){
   <div class="qtop" style="margin:0 0 8px"><div class="prog"><i style="width:${answered/mock.list.length*100}%"></i></div></div>
   ${it.kind==='x'?groupCard(mock.list,gs,ge,mock.act,false,false):qCard(it,mock.i,mock.list.length,false)}
   <div class="actionbar"><div class="in row"><button class="btn ghost" data-act="mprev" ${gs?'':'disabled'}>前へ</button><button class="btn block" data-act="mnext">${ge<mock.list.length?'次へ':'見直しへ'}</button></div></div>
-  <div class="panel" style="margin-top:12px"><div class="lbl">問題一覧</div><div class="qgrid">${mock.list.map((x,j)=>`<button data-jump="${j}" class="${x.pick!=null?'done':''} ${j>=gs&&j<ge?'cur':''}" aria-label="問${j+1}">${j+1}</button>`).join('')}</div>
+  <div class="panel" style="margin-top:12px"><div class="lbl" style="display:flex;justify-content:space-between"><span>問題一覧</span><span>解答済み ${answered}／${mock.list.length}</span></div>${secListHTML(false,gs)}
   ${mock.confirm?`<div class="confirm">未解答が ${mock.list.length-answered} 問あります。採点しますか？<div class="actions" style="margin-top:8px"><button class="btn danger" data-act="mfinish">採点する</button><button class="btn ghost" data-act="mcancel">戻る</button></div></div>`:`<div class="actions" style="margin-top:12px"><button class="btn danger" data-act="mfinishask">終了して採点</button></div>`}</div>`;
 }
 function finishMock(){
@@ -2964,21 +2995,45 @@ function finishMock(){
   const f={'手法':{c:0,n:0},'実践':{c:0,n:0}};
   mock.list.forEach(x=>{const ok=x.pick===x.ans;f[CATS[x.cat].field].n++;if(ok)f[CATS[x.cat].field].c++;record(x.id,ok);});
   const tot=pct(f['手法'].c+f['実践'].c,mock.list.length),m=pct(f['手法'].c,f['手法'].n),p=pct(f['実践'].c,f['実践'].n);
-  mock.res={tot,m,p,pass:tot>=70&&m>=50&&p>=50,used:Math.round((Date.now()-(mock.end-MOCK.min*60e3))/60e3)};
-  P.mocks.push({t:Date.now(),tot,m,p,pass:mock.res.pass});P.mocks=P.mocks.slice(-20);
+  const min=mock.min||MOCK.min,kind=mock.mode&&mock.mode!=='full'?mock.mode:null;
+  // 分けて受けた回は、その分野の正答率だけで判定する（合格圏の判定・最終章のクリアには使わない）
+  const fv=kind==='手法'?m:kind==='実践'?p:null;
+  mock.res={tot,m,p,kind,fv,fok:fv!=null&&fv>=70,pass:!kind&&tot>=70&&m>=50&&p>=50,used:Math.round((Date.now()-(mock.end-min*60e3))/60e3),min};
+  P.mocks.push(kind?{t:Date.now(),kind,m,p,tot,fok:mock.res.fok,pass:false}:{t:Date.now(),tot,m,p,pass:mock.res.pass});P.mocks=P.mocks.slice(-20);
   {const fin=PATH[PATH.length-1];if(mock.res.pass&&finalReady(fin)){P.chap=P.chap||{};P.chap[fin.id]=true;}}
   P.sessions.push({t:Date.now(),n:mock.list.length,c:f['手法'].c+f['実践'].c});P.sessions=P.sessions.slice(-30);
-  sfx(mock.res.pass?'fanfare':'end');if(mock.res.pass)setTimeout(confetti,300);persist();render();
+  const good=mock.res.pass||mock.res.fok;sfx(good?'fanfare':'end');if(good)setTimeout(confetti,300);persist();render();
+}
+// 問題一覧：分野（手法・実践）→ 大問ごとにまとめ、大問の題名・進み具合（結果では正解数）と空欄の番号を並べる
+function mockSections(list){
+  const out=[];let i=0,no=0;
+  while(i<list.length){const [s,e]=grpRange(list,i),x=list[s],S=x.kind==='x'?SETS[x.set]:null,field=S?S.field:CATS[x.cat].field;
+    if(!out.length||out[out.length-1].field!==field)out.push({field,secs:[]});
+    out[out.length-1].secs.push({no:++no,title:S?S.title:CATS[x.cat].name,ox:!!(S&&S.type==='ox'),s,e});i=e;}
+  return out;
+}
+function secListHTML(result,cur){
+  const L=mock.list;
+  return mockSections(L).map(g=>{const n=g.secs.reduce((a,c)=>a+c.e-c.s,0);
+    return `<div class="msec"><div class="msech">${g.field}<span>${n}問</span></div>${g.secs.map(c=>{
+      const its=L.slice(c.s,c.e),k=c.e-c.s,done=its.filter(x=>x.pick!=null).length,ok=its.filter(x=>x.pick===x.ans).length;
+      const st=result?(ok===k?'r':ok===0?'w':'part'):(done===k?'done':done?'part':'');
+      return `<div class="mrow ${!result&&cur===c.s?'cur':''}"><button class="mhead ${st}" ${result?`data-mview="${c.s}"`:`data-jump="${c.s}"`}><b>第${c.no}問</b><span class="t">${esc(c.title)}${c.ox&&!/正誤/.test(c.title)?'（正誤）':''}</span><span class="cnt">${result?`${ok}／${k} 正解`:`${done}／${k}`}</span></button>
+        <div class="qgrid">${its.map((x,t)=>{const j=c.s+t;return result?`<button class="${x.pick===x.ans?'r':'w'}" data-mview="${j}" aria-label="問${j+1}">${j+1}</button>`
+          :`<button data-jump="${j}" class="${x.pick!=null?'done':''}" aria-label="問${j+1}${x.pick!=null?' 解答済み':''}">${j+1}</button>`;}).join('')}</div></div>`;}).join('')}</div>`;}).join('');
 }
 function mockResultHTML(){
   const r=mock.res,box=(l,v,th)=>`<div><div class="lbl">${l}</div><div class="v ${v>=th?'ok':'ng'}">${v}%</div><div class="note" style="margin:0">基準 ${th}%</div></div>`;
   const filter=mock.filter||'wrong';
   const rows=mock.list.map((x,j)=>({x,j})).filter(o=>filter==='all'||o.x.pick!==o.x.ans);
   return `<h2>模擬試験の結果</h2>
-  <div class="panel"><div class="verdict ${r.pass?'pass':'fail'}">${r.pass?'合格圏':'不合格圏'}</div>
+  <div class="panel">${r.kind?`<div class="verdict ${r.fok?'pass':'fail'}">${r.fok?'目安クリア':r.fv>=50?'分野の基準は達成':'基準未達'}</div>
+  <div class="crit">${box(r.kind+'の正答率',r.fv,50)}${box('本番の総合の目安',r.fv,70)}</div>
+  <p class="note">${r.kind}だけの模擬試験です。本番では、各分野50%以上に加えて総合70%以上が必要なので、70%以上を目安にしてください。所要時間 約${Math.min(r.used,r.min)}分。</p>`
+  :`<div class="verdict ${r.pass?'pass':'fail'}">${r.pass?'合格圏':'不合格圏'}</div>
   <div class="crit">${box('総合',r.tot,70)}${box('手法',r.m,50)}${box('実践',r.p,50)}</div>
-  <p class="note">所要時間 約${Math.min(r.used,MOCK.min)}分。</p>
-  <div class="qgrid">${mock.list.map((x,j)=>`<button class="${x.pick===x.ans?'r':'w'}" data-mview="${j}">${j+1}</button>`).join('')}</div></div>
+  <p class="note">所要時間 約${Math.min(r.used,r.min||MOCK.min)}分。</p>`}
+  ${secListHTML(true)}</div>
   <h2>解説</h2>
   <div class="seg"><button data-mf="wrong" aria-pressed="${filter==='wrong'}">間違えた問題</button><button data-mf="all" aria-pressed="${filter==='all'}">すべて</button></div>
   <div class="wronglist">${rows.map(({x,j})=>`<div class="panel" id="mq${j}"><div class="qhead"><span class="qno">問${j+1}</span><span class="tag">${CATS[x.cat].name}</span><span class="tag ${x.pick===x.ans?'':'calc'}">${x.pick===x.ans?'正解':x.pick==null?'未解答':'不正解'}</span></div><p>${esc(x.q)}</p><p><b>正答：</b>${labOf(x)[x.ans]} ${esc(x.choices[x.ans])}${x.pick!=null&&x.pick!==x.ans?`<br><b>あなたの解答：</b>${labOf(x)[x.pick]} ${esc(x.choices[x.pick])}`:''}</p><p class="note">${esc(x.ex)}</p>${refLine(x.cat)}</div>`).join('')||'<p class="empty">間違えた問題はありません。</p>'}</div>
@@ -3032,7 +3087,7 @@ function toast(m){const t=$('#toast');if(!t)return;t.textContent=m;t.hidden=fals
 function statsHTML(){
   const acc=catAcc();
   const rows=f=>Object.entries(CATS).filter(([k,c])=>c.field===f).map(([k,c])=>{const a=acc[k],p=pct(a.c,a.n);return `<div class="catrow"><span class="nm">${c.name} <span class="n">${a.n}回</span></span><span class="pc">${p==null?'—':p+'%'}</span><div class="meter"><i class="${p!=null&&p<70?'low':''}" style="width:${p||0}%"></i></div></div>`;}).join('');
-  const sr=srsSummary(),all=Object.values(P.stats).reduce((a,s)=>({c:a.c+s.c,n:a.n+s.c+s.w}),{c:0,n:0}),f=fieldAcc(),last=P.mocks[P.mocks.length-1];
+  const sr=srsSummary(),all=Object.values(P.stats).reduce((a,s)=>({c:a.c+s.c,n:a.n+s.c+s.w}),{c:0,n:0}),f=fieldAcc(),last=P.mocks.filter(m=>!m.kind).slice(-1)[0];
   const kp=(lab,x)=>{const p=pct(x.c,x.n);return `<div class="panel kpi"><div class="lbl">${lab}</div><div class="v" style="color:${p==null?'var(--muted)':p>=(lab==='総合'?70:50)?'var(--ok)':'var(--ucl)'}">${p==null?'—':p}<small>${p==null?'':'%'}</small></div></div>`;};
   return `<h2>現在の正答率</h2>
   <div class="kpis">${kp('総合',all)}${kp('手法',f['手法'])}${kp('実践',f['実践'])}</div>
@@ -3179,7 +3234,7 @@ $('#main').addEventListener('click',e=>{
       // 次の未入力の空欄へ自動で進む
       let nx=null;for(let k=1;k<=ge-gs;k++){const j=gs+((L.act-gs+k)%(ge-gs));if(list[j].pick==null){nx=j;break;}}
       if(nx!=null)L.act=nx;render();
-      const el=document.querySelector('.blank2.act');if(el&&nx!=null)el.scrollIntoView({block:'center',behavior:'smooth'});return;}
+      if(nx!=null)showBlank();return;}
    }}
   if(d.mview!=null){mock.filter='all';render();const el=document.getElementById('mq'+d.mview);if(el)el.scrollIntoView({block:'start'});return;}
   if(d.mf){mock.filter=d.mf;render();return;}
@@ -3215,7 +3270,7 @@ $('#main').addEventListener('click',e=>{
     case 'quitquiz':if(quizActive())askQuit();else{quiz=null;render();}break;
     case 'sheet':openSheetFor();break;
     case 'calc':openCalc();break;
-    case 'startmock':startMock();break;
+    case 'startmock':startMock(d.mode);break;
     case 'mprev':mock.i=grpRange(mock.list,Math.max(0,grpRange(mock.list,mock.i)[0]-1))[0];mock.act=null;mock.confirm=false;render();window.scrollTo(0,0);break;
     case 'mnext':{const ge=grpRange(mock.list,mock.i)[1];if(ge<mock.list.length){mock.i=ge;mock.act=null;render();window.scrollTo(0,0);}else{mock.confirm=mock.list.some(x=>x.pick==null);if(!mock.confirm)finishMock();else render();}break;}
     case 'mfinishask':if(mock.list.some(x=>x.pick==null)){mock.confirm=true;render();}else finishMock();break;
