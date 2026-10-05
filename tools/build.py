@@ -24,6 +24,8 @@ META = (
     f'<meta name="description" content="{DESC}">'
     f'<link rel="canonical" href="{URL}">'
     '<meta name="theme-color" content="#1D5C7A">'
+    # Google Search Console の所有権確認
+    '<meta name="google-site-verification" content="xLVjdnAB_uJxX1D1qEyI_qkFT_PrQzqFOiInbc6AcJU">'
     '<meta property="og:type" content="website">'
     '<meta property="og:site_name" content="QC2級ドリル">'
     '<meta property="og:title" content="QC2級ドリル｜QC検定®2級の無料問題集・模擬試験">'
