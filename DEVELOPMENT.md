@@ -1,0 +1,118 @@
+# 開発者向け情報
+
+アプリの仕組み、ビルド、テスト、問題の追加、リリースの手順です。利用方法は [README.md](README.md) を参照してください。
+
+## 構成
+
+画面・問題・数値表は `src/` に分かれており、`tools/build.py` で1つの HTML（`docs/index.html`）にまとめます。この HTML が Web 版（GitHub Pages）で、Android アプリにも同梱されます。外部ライブラリやサーバーは使っていません。
+
+```
+src/
+  template.html   画面（HTML・CSS・アプリ本体の JavaScript）
+  bank.js         知識問題（基本）と分野定義（CATS）
+  bank2.js〜bank7.js  知識問題（追加・レベル表との差分・3級/4級範囲・否定形の設問など）
+  gen.js          計算問題ジェネレータ（基本）と共通関数
+  gen2.js, gen3.js  計算問題ジェネレータ（追加）
+  dai.js〜dai3.js 本試験形式の問題（大問の穴埋め・正誤、複合大問、事例）
+  path.js         学習ロードの章・ステージ・ストーリー
+  figs.js         解説の図（SVG）と、問題に合う図の選び方
+  syllabus.js     公式レベル表の項目と、各項目に対応する問題の割り当て
+  res.js          バージョン・更新履歴、試験日程、資料タブのリンクと関連規格
+  tables.json     数値表（tools/gen_tables.py で生成）
+tools/
+  build.py        src/ をまとめて docs/index.html を生成
+  gen_tables.py   数値表を scipy で生成
+tests/
+  test.js         計算問題を各3,000回生成し、選択肢の重複・非数値・出題範囲の抜けを検査
+  verify.py, verify3.py, verify_dai.py  計算問題・大問の正解を scipy で独立に再計算して照合
+  lenbias.js      知識問題の選択肢の長さの偏り・否定形の割合を計測
+  calcbias.js     計算問題で正解が選択肢の何番目の大きさかの分布を計測
+docs/
+  index.html      ビルド結果（GitHub Pages の公開対象、APK にも同梱）
+android/          Android アプリ（WebView で docs/index.html を表示）
+screenshots/      README 用の画面写真
+```
+
+## ビルドとテスト
+
+必要なもの：Python 3（scipy）、Node.js
+
+```powershell
+python tools/build.py          # docs/index.html を生成
+node tests/test.js             # 生成・整合性の検査
+python tests/verify.py         # 計算問題の正解の照合
+python tests/verify3.py
+python tests/verify_dai.py     # 大問の正解の照合
+python tools/gen_tables.py     # 数値表を作り直す場合のみ
+```
+
+`src/` を編集したら `python tools/build.py` を実行し、`docs/index.html` も一緒にコミットしてください。`main` への push で GitHub Actions（`.github/workflows/test.yml`）が同じ検査を行い、`docs/index.html` がビルド結果と一致しているかも確認します。
+
+## 問題の追加
+
+**知識問題**：`src/bank*.js` に次の形式で追加します。選択肢は先頭が正解で、表示時にシャッフルされます。分野キーは `src/bank.js` の `CATS` を参照してください。
+
+```js
+['分野キー', '問題文', ['正解', '誤答1', '誤答2', '誤答3'], '解説'],
+```
+
+- 解説は最初の1文が「要点」として太字で表示され、残りは「詳しく」に入ります。
+- 正解の選択肢だけが長く（短く）ならないようにしてください。`node tests/lenbias.js` で偏りを確認できます。
+- 問題文を変えると解答記録の ID が変わります。既存の問題文を直すときは、5番目の要素に元の ID（元の問題文の `hash()` 値）を書くと、記録を引き継げます。
+
+**計算問題**：`src/gen*.js` に、`{q: 問題文, ch: [正解, 誤答...], ex: 解説}` を返す関数として追加します。選択肢は共通関数 `mc()` で作ると、正解の大小の位置が毎回ランダムになります。正解は必ずアプリ内の数値表（`normUp`・`tVal`・`chiVal`・`fVal`・`CC`）から計算してください（表を引いた値と正解がずれないようにするため）。追加したら `tests/verify*.py` に独立の検算を足してください。
+
+**試験日程**：`src/res.js` の `EXAMS` に、日本規格協会が公式に発表した回だけを追加します。
+
+## Android アプリ
+
+`android/` は、`docs/index.html` を WebView で表示するアプリです。
+
+| ファイル | 役割 |
+|---|---|
+| `Boot.java` | 起動の入口。前回エラーで終了していれば内容を表示し、セーフモードで開ける |
+| `App.java` | 予期しないエラーの内容を保存する |
+| `MainActivity.java` | WebView の表示、戻るボタン、外部リンクを外部ブラウザで開く |
+| `Bridge.java` | Web から `window.QC2App` として呼ぶ機能（通知の設定、今日の解答数の受け渡し） |
+| `Reminder.java` | 毎日のリマインダー通知の予約と表示 |
+
+権限：`INTERNET`、`POST_NOTIFICATIONS`（Android 13 以降、通知をオンにしたときに許可を求める）、`RECEIVE_BOOT_COMPLETED`（再起動後に通知を予約し直す）、`VIBRATE`。正確なアラームの権限は使わないため、通知は数分遅れることがあります。
+
+### ビルド（GitHub Actions）
+
+`.github/workflows/android.yml` が APK を作ります。
+
+- `main` への push：Actions の実行結果（Artifacts）に `qc2-drill-apk` を置きます。
+- リリースの公開：そのリリースに `qc2-drill.apk` を添付します。
+- 版数（versionCode）は「100＋実行番号」、版名（versionName）はリリースのタグ名です。
+
+### 署名の設定
+
+署名鍵はリポジトリに入れていません（第三者が同じ署名の APK を作れないようにするため）。Settings → Secrets and variables → Actions に次の4つを登録します。
+
+| 名前 | 内容 |
+|---|---|
+| `KEYSTORE_BASE64` | 署名鍵ファイルを Base64 にした文字列 |
+| `KEYSTORE_PASSWORD` | 鍵ストアのパスワード |
+| `KEY_ALIAS` | 鍵の別名 |
+| `KEY_PASSWORD` | 鍵のパスワード |
+
+```powershell
+# 鍵ファイルを Base64 にしてクリップボードへ（Windows PowerShell）
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("E:\path\to\qc2.keystore")) | Set-Clipboard
+```
+
+手元でビルドする場合は、`android/keystore.properties`（.gitignore 済み）に `storeFile`・`storePassword`・`keyAlias`・`keyPassword` を書きます。鍵をなくすと、既存のアプリに上書き更新できなくなります。
+
+## リリース手順
+
+1. `src/res.js` の `APP.version`・`APP.date`・`history` を更新する（1行で簡潔に）。
+2. `python tools/build.py` を実行し、テストを通す。
+3. `git add -A`、`git commit`、`git push`。
+4. GitHub の Releases で新しいタグ（例 `v2.0.2`）を作って公開する。数分後に `qc2-drill.apk` が自動で添付される。
+
+Web 版（GitHub Pages）は、`docs/index.html` を push した時点で更新されます。
+
+## バージョン
+
+`src/res.js` の `APP.version` で管理し、アプリの設定画面と最下部に表示しています。
