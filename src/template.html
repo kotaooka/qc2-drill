@@ -38,6 +38,7 @@ h2{font-family:var(--f-disp);font-size:1.15rem;margin:24px 0 10px;text-wrap:bala
 .kpi .v small{font-size:.8rem;color:var(--muted);font-weight:400}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--accent);background:var(--accent);color:var(--card);border-radius:4px;padding:10px 16px;font-weight:700;cursor:pointer;min-height:44px}
 .btn.ghost{background:transparent;color:var(--accent)}
+a.btn{text-decoration:none}
 .btn.danger{background:transparent;border-color:var(--ucl);color:var(--ucl)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
@@ -1667,15 +1668,46 @@ function settingsHTML(){
   <div class="setcard"><h3>通知</h3>
     ${app?`<div class="srow"><div class="t"><b>毎日のリマインダー</b><span>指定した時刻に、今日の目標が終わっていなければ通知します</span></div>${sw('remind',rc.on,'毎日のリマインダー')}</div>
     ${rc.on?`<div class="srow"><div class="t"><b>通知する時刻</b></div><input type="time" id="remTime" value="${pad(rc.h)}:${pad(rc.m)}" aria-label="通知する時刻"></div>
-    ${allowed?`<div class="srow"><div class="t"><span>数分ほど遅れて届くことがあります。</span></div><button class="btn ghost sm" data-test-notify>テスト通知</button></div>`:`<div class="srow"><div class="t"><b style="color:var(--ucl)">通知が許可されていません</b><span>Android の「設定 → アプリ → QC検定2級 → 通知」で許可してください。</span></div></div>`}`:''}`
+    ${allowed?`<div class="srow"><div class="t"><span>数分ほど遅れて届くことがあります。</span></div><button class="btn ghost sm" data-test-notify>テスト通知</button></div>`:`<div class="srow"><div class="t"><b style="color:var(--ucl)">通知が許可されていません</b><span>Android の「設定 → アプリ → QC2級ドリル → 通知」で許可してください。</span></div></div>`}`:''}`
     :`<div class="srow"><div class="t"><b>毎日のリマインダー</b><span>Android アプリ版で使えます。Web 版では通知を送れません。</span></div></div>`}
   </div>
   <div class="setcard"><h3>このアプリについて</h3>
     <div class="srow"><div class="t"><b>はじめの案内</b><span>初回起動時の設定（受験日・目標・表示・通知）をもう一度行う</span></div><button class="btn ghost sm" data-reonb>表示する</button></div>
     <div class="srow"><div class="t"><b>バージョン</b><span>${APP.date} 更新</span></div><span class="ver-big" style="font-size:1.1rem">v${APP.version}</span></div>
+    <div class="srow"><div class="t"><b>更新の確認</b><span id="updState">${updHTML()}</span></div><button class="btn ghost sm" data-upd>確認する</button></div>
+    <div class="srow"><div class="t"><b>GitHub のページ</b><span>使い方・変更内容・不具合の報告</span></div><a class="btn ghost sm" href="${REPO.page}" target="_blank" rel="noopener">開く</a></div>
     <div style="padding:6px 0 10px">${H.slice(0,3).map(([v,d,t])=>`<div class="hist"><b>v${v}</b><span class="d">${d}</span><span>${esc(t)}</span></div>`).join('')}
     ${H.length>3?`<details class="oldhist"><summary>以前の変更（${H.length-3}件）</summary>${H.slice(3).map(([v,d,t])=>`<div class="hist"><b>v${v}</b><span class="d">${d}</span><span>${esc(t)}</span></div>`).join('')}</details>`:''}</div>
   </div>`;
+}
+// ===== 更新の確認（GitHub の最新リリースと比べる） =====
+const REPO={page:'https://github.com/kotaooka/qc2-drill',api:'https://api.github.com/repos/kotaooka/qc2-drill/releases/latest'};
+let upd={st:'idle'};
+// "2.0.10" と "2.0.9" のように、数字ごとに大小を比べる
+function cmpVer(a,b){const x=String(a).replace(/^v/,'').split('.').map(Number),y=String(b).replace(/^v/,'').split('.').map(Number);
+  for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d>0?1:-1;}return 0;}
+function updHTML(){
+  if(upd.st==='busy')return '確認しています…';
+  if(upd.st==='err')return `<b style="color:var(--ucl)">確認できませんでした</b>（${esc(upd.msg)}）`;
+  if(upd.st==='latest')return `最新版です（v${esc(upd.ver)}・${esc(upd.date)} 公開）`;
+  if(upd.st==='new'){
+    const how=APPB()?`<a href="${esc(upd.apk||upd.url)}" target="_blank" rel="noopener">新しい APK をダウンロード</a>。ダウンロードしたファイルを開いて上書きインストールすると、解答記録はそのまま残ります。`
+      :`<a href="#" data-reload>再読み込み</a>すると新しい版になります。`;
+    return `<b style="color:var(--ok)">v${esc(upd.ver)} があります</b>（${esc(upd.date)} 公開）。${how}`;}
+  return 'GitHub で最新版を確認します（通信します）';
+}
+async function checkUpdate(){
+  upd={st:'busy'};const el=()=>$('#updState');if(el())el().innerHTML=updHTML();
+  try{
+    const r=await fetch(REPO.api,{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+    if(r.status===403||r.status===429)throw new Error('確認の回数が多すぎます。1時間ほどおいてください');
+    if(!r.ok)throw new Error('サーバーの応答 '+r.status);
+    const j=await r.json(),ver=String(j.tag_name||'').replace(/^v/,'');
+    if(!/^\d+(\.\d+)*$/.test(ver))throw new Error('版名を読み取れません');
+    const apk=(j.assets||[]).find(a=>/\.apk$/i.test(a.name));
+    upd={st:cmpVer(ver,APP.version)>0?'new':'latest',ver,date:String(j.published_at||'').slice(0,10),url:j.html_url||REPO.page+'/releases/latest',apk:apk&&apk.browser_download_url};
+  }catch(x){upd={st:'err',msg:navigator.onLine===false?'インターネットに接続されていません':(x&&x.message)||'通信エラー'};}
+  if(el())el().innerHTML=updHTML();
 }
 function openSettings(){$('#setBody').innerHTML=settingsHTML();showSheet('#setSheet');$('#setClose').focus();}
 function refreshSettings(){const y=$('#setSheet .in')?$('#setSheet').scrollTop:0;$('#setBody').innerHTML=settingsHTML();$('#setSheet').scrollTop=y;render();}
@@ -1685,6 +1717,8 @@ $('#streakChip').addEventListener('click',()=>{sfx('tap');streakSheet();});
 $('#setClose').addEventListener('click',()=>{closeSheets();$('#setBtn').focus();});
 $('#setSheet').addEventListener('click',e=>{
   if(e.target.closest('[data-reonb]')){closeSheets();openOnb();return;}
+  if(e.target.closest('[data-upd]')){sfx('tap');if(upd.st!=='busy')checkUpdate();return;}
+  if(e.target.closest('[data-reload]')){e.preventDefault();location.reload();return;}
   const ts=e.target.closest('[data-test-sound]');if(ts){const was=soundOn;soundOn=true;unlockAudio();sfx('right');soundOn=was;setTimeout(()=>{const el=$('#audState');if(el)el.textContent='状態：'+audioState()+'。鳴らないときは、端末の「メディアの音量」を上げてください（着信音の音量とは別です）。';},300);return;}
   const t=e.target.closest('[data-test-notify]');if(t){const b=APPB();if(b)try{b.testNotify();toast('テスト通知を送りました');}catch(x){}return;}
   const w=e.target.closest('[data-sw]');
