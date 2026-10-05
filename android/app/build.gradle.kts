@@ -1,6 +1,19 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
 }
+
+// 署名：鍵ファイルとパスワードはリポジトリに入れない。
+//  - GitHub Actions：Secrets から復元した鍵を環境変数で渡す（.github/workflows/android.yml）
+//  - 手元でビルドする場合：android/keystore.properties に storeFile / storePassword / keyAlias / keyPassword を書く（.gitignore 済み）
+// ※ android { } の中では `java` が別の意味になるため、読み込みはここ（外側）で行う
+val ksProps = Properties().also { p ->
+    val f = rootProject.file("keystore.properties")
+    if (f.exists()) f.inputStream().use { p.load(it) }
+}
+fun conf(env: String, key: String): String? = System.getenv(env) ?: ksProps.getProperty(key)
+val ksFile: String? = conf("KEYSTORE_FILE", "storeFile")
 
 android {
     namespace = "app.qc2drill"
@@ -15,18 +28,9 @@ android {
         versionName = System.getenv("VERSION_NAME") ?: "2.0.1"
     }
 
-    // 署名：鍵ファイルとパスワードはリポジトリに入れない。
-    //  - GitHub Actions：Secrets から復元した鍵を環境変数で渡す（.github/workflows/android.yml）
-    //  - 手元でビルドする場合：android/keystore.properties に storeFile / storePassword / keyAlias / keyPassword を書く（.gitignore 済み）
-    val ksProps = java.util.Properties().apply {
-        val f = rootProject.file("keystore.properties")
-        if (f.exists()) f.inputStream().use { load(it) }
-    }
-    fun conf(env: String, key: String): String? = System.getenv(env) ?: ksProps.getProperty(key)
-    val ksFile = conf("KEYSTORE_FILE", "storeFile")
     signingConfigs {
         if (ksFile != null) create("shared") {
-            storeFile = file(ksFile)
+            storeFile = file(ksFile!!)
             storePassword = conf("KEYSTORE_PASSWORD", "storePassword")
             keyAlias = conf("KEY_ALIAS", "keyAlias") ?: "qc2"
             keyPassword = conf("KEY_PASSWORD", "keyPassword")
