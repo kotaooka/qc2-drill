@@ -1377,9 +1377,10 @@ DAI.push(
 );
 // ===== バージョン情報と資料（公式ページ・規格） =====
 const APP = {
-  version: '2.2.0',
+  version: '2.3.0',
   date: '2026-10-05',
   history: [
+    ['2.3.0', '2026-10-05', '模擬試験を本番に合わせ、本試験形式の大問だけで約100問・90分に'],
     ['2.2.0', '2026-10-05', '試験日は一覧から選ぶ方式をやめ、自分で日付を入れる方式に（申込締切も任意で設定可）。公式集に記号の意味と読み方を追加'],
     ['2.1.0', '2026-10-05', 'Web版をホーム画面に追加してオフラインで使えるように。公式集、「あとで見る」、GitHub での誤りの報告を追加。本試験形式の大問を見直して16か所を修正'],
     ['2.0.4', '2026-10-05', '知識問題を全問見直し、17問の解説・選択肢・問題文を修正'],
@@ -2403,11 +2404,6 @@ function buildSets(pool,target,weakFirst){
   return out.map(id=>instance(BYID[id]));
 }
 // 決まった問数ちょうどになるようにセットを選ぶ（模擬試験用）
-function fitSets(pool,target){
-  const out=[];
-  for(const sid of shuffle([...new Set(pool.map(i=>i.set))])){const n=SETS[sid].ids.length;if(out.length+n<=target)SETS[sid].ids.forEach(id=>out.push(id));}
-  return out;
-}
 
 // ===== 進捗の保存（アカウント保存 → 使えなければこの端末に保存） =====
 const EMPTY=()=>({stats:{},sessions:[],mocks:[],reports:[],marks:{},daily:{},goal:10,path:{},chap:{}});
@@ -2720,7 +2716,7 @@ function homeHTML(){
       return n?`<button class="lrow" data-act="marks"><span class="ic">${ICON.star}</span><span><b>あとで見る</b><span>登録した${n}問（大問は1問と数える）</span></span>${ICON.chev}</button>`:'';})()}
     <button class="lrow" data-act="quick"><span class="ic">${ICON.bolt}</span><span><b>全分野から10問</b><span>計算・知識をランダムに</span></span>${ICON.chev}</button>
     <button class="lrow" data-act="dai"><span class="ic">${ICON.sheet}</span><span><b>本試験形式</b><span>大問の穴埋め・正誤</span></span>${ICON.chev}</button>
-    <button class="lrow" data-act="gomock"><span class="ic">${ICON.timer}</span><span><b>模擬試験</b><span>50問・90分で合否判定</span></span>${ICON.chev}</button>
+    <button class="lrow" data-act="gomock"><span class="ic">${ICON.timer}</span><span><b>模擬試験</b><span>約100問・90分で合否判定</span></span>${ICON.chev}</button>
   </div>
   <p class="status" style="margin-inline:4px">${store.mode==='cloud'?'進捗はアカウントに保存されます（別の端末でも続きから）。':'進捗はこの端末に保存されます。'}</p>`;
 }
@@ -2754,7 +2750,7 @@ function testSheet(ci){
   const ch=PATH[ci],open=chapOpen(ci),cd=chapDone(ch),ready=ch.stages.every(s=>stageDone(s.id));
   openG(`<div class="sheethead"><strong>${ch.final?'最終試験':open?'章末テスト':'飛び級テスト'}</strong><button class="iconbtn" data-close aria-label="閉じる">${ICON.close}</button></div>
   <p class="note" style="margin-top:0">${esc(ch.title)}</p>
-  <p>${ch.final?`本番と同じ50問・90分の模擬試験で合格基準を超えると、物語が完結します。${ready?'':'先にこの章のステージをすべてクリアしてください。'}`
+  <p>${ch.final?`本番と同じ約100問・90分の模擬試験で合格基準を超えると、物語が完結します。${ready?'':'先にこの章のステージをすべてクリアしてください。'}`
      :`この章の範囲から${PATH_RULE.testN}問。8割以上で修了し、称号「${esc(ch.role)}」を獲得します。${open?'':'合格すると、この章までのすべての章が修了扱いになります。'}`}</p>
   <button class="btn block" data-ctest="${ci}" ${ch.final&&!ready?'disabled':''}>${ch.final?'模擬試験を始める':cd?'もう一度受ける':'テストを始める'}</button>`);
 }
@@ -2920,26 +2916,31 @@ function quizHTML(){
 }
 
 // ===== 模擬試験 =====
-const MOCK={n:50,method:30,practice:20,min:90};
+const MOCK={method:50,practice:50,min:90};  // 本番と同じく約100問（手法・実践それぞれ約50問）を90分で解く
 function mockStartHTML(){
   const hist=P.mocks.slice(-5).reverse();
   return subtabs('practice')+`<h2>模擬試験</h2>
   <div class="panel">
-    <p style="margin-top:0">本試験と同じ90分・マークシート形式で、手法${MOCK.method}問・実践${MOCK.practice}問を出題します。解答中は正誤を表示せず、終了後に合格基準で判定します。</p>
+    <p style="margin-top:0">本試験と同じ90分・マークシート形式で、本試験形式の大問だけを約100問（手法・実践それぞれ約${MOCK.method}問）出題します。1問あたり1分弱のペースが必要です。解答中は正誤を表示せず、終了後に合格基準で判定します。</p>
     <ul style="margin:0 0 12px;padding-left:1.2em"><li>各分野 概ね50%以上</li><li>総合 概ね70%以上</li></ul>
     <button class="btn" data-act="startmock">開始する（90:00）</button>
   </div>
   ${hist.length?`<h2>受験履歴</h2><div class="panel">${hist.map(h=>`<div class="catrow" style="grid-template-columns:minmax(0,1fr) auto"><span class="nm">${new Date(h.t).toLocaleString('ja-JP',{dateStyle:'short',timeStyle:'short'})}　<b style="color:var(--${h.pass?'ok':'ucl'})">${h.pass?'合格圏':'不合格圏'}</b></span><span class="pc">${h.tot}% / ${h.m}% / ${h.p}%</span></div>`).join('')}<p class="note">総合 / 手法 / 実践</p></div>`:''}`;
 }
+// 本試験形式の大問を、空欄の合計が lo〜hi 問になるようにセット単位で選ぶ。
+// 解いた回数の少ない大問を優先するので、続けて受けると別の大問が出やすい
+function pickSets(pool,lo,hi){
+  const tries=sid=>SETS[sid].ids.reduce((a,id)=>{const t=P.stats[id];return a+(t?(t.c||0)+(t.w||0):0);},0);
+  const sids=shuffle([...new Set(pool.map(i=>i.set))]).map(sid=>[sid,tries(sid)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
+  const out=[];
+  for(const sid of sids){const n=SETS[sid].ids.length;if(out.length>=lo)break;if(out.length+n<=hi)SETS[sid].ids.forEach(id=>out.push(id));}
+  return out;
+}
 function startMock(){
-  const fld=(f,kind)=>ITEMS.filter(i=>i.kind===kind&&(kind==='x'?SETS[i.set].field:CATS[i.cat].field)===f);
-  // 各分野の約半分を本試験形式の大問（セット単位で順序を保つ）にし、残りを計算・知識問題で埋める
-  const mSet=fitSets(fld('手法','x'),Math.round(MOCK.method*.5));
-  const pSet=fitSets(fld('実践','x'),Math.round(MOCK.practice*.5));
-  const mRest=MOCK.method-mSet.length,ng=Math.round(mRest*.6),g=fld('手法','g');
-  const mList=[...shuffle(g).concat(shuffle(g)).slice(0,ng),...shuffle(fld('手法','k')).slice(0,mRest-ng)];
-  const pList=shuffle(fld('実践','k')).slice(0,MOCK.practice-pSet.length);
-  const list=[...mSet.map(id=>BYID[id]),...shuffle(mList),...pSet.map(id=>BYID[id]),...pList].map(instance);
+  const fld=f=>ITEMS.filter(i=>i.kind==='x'&&SETS[i.set].field===f);
+  // 本試験と同じく、大問（穴埋め・正誤）だけで手法・実践それぞれ約50問
+  const ids=[...pickSets(fld('手法'),MOCK.method-2,MOCK.method+4),...pickSets(fld('実践'),MOCK.practice-2,MOCK.practice+4)];
+  const list=ids.map(id=>instance(BYID[id]));
   mock={list,i:0,end:Date.now()+MOCK.min*60e3,done:false,confirm:false};
   tick();render();saveSession();
 }
