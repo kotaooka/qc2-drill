@@ -57,7 +57,7 @@ public class Reminder extends BroadcastReceiver {
         int icon = ctx.getResources().getIdentifier("ic_notify", "drawable", ctx.getPackageName());
         Notification n = new Notification.Builder(ctx, CHANNEL)
                 .setSmallIcon(icon)
-                .setContentTitle("QC検定2級 ドリル")
+                .setContentTitle("QC2級ドリル")
                 .setContentText(text)
                 .setAutoCancel(true)
                 .setContentIntent(pi)
