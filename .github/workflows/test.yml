@@ -1,0 +1,25 @@
+# プッシュ時にビルドとテストを実行し、docs/index.html がビルド結果と一致しているかも確認する
+name: test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: pip install scipy
+      - name: ビルド結果がコミット済みのものと一致するか
+        run: python tools/build.py && git diff --exit-code docs/index.html
+      - name: 生成問題の検査
+        run: node tests/test.js
+      - name: 正解の独立検算
+        run: python tests/verify.py
+      - name: 本試験形式の計算セットの検算
+        run: python tests/verify_dai.py
+      - name: 追加した計算問題の検算
+        run: python tests/verify3.py

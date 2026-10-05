@@ -1,0 +1,1714 @@
+<title>QC検定2級 ドリル</title>
+<style>
+/* レイアウト：方眼紙の地にマークシート型の解答欄。上部タブで5画面を切替える1カラムアプリ */
+:root{
+  --paper:#f3f6f5; --grid:rgba(29,92,122,.07); --card:#ffffff; --ink:#1c2830; --muted:#5b6c74; --line:#d3ddda;
+  --accent:#1d5c7a; --accent-soft:#e2eef3; --ucl:#b3372a; --ucl-soft:#f8e6e2; --ok:#276f43; --ok-soft:#e1f1e7; --warn:#a86a12;
+  --f-body:"Noto Sans JP","Noto Sans CJK JP","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,system-ui,sans-serif;
+  --f-disp:var(--f-body);
+  --f-num:var(--f-body);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#10171b; --grid:rgba(111,179,210,.06); --card:#172126; --ink:#e2eaed; --muted:#93a5ac; --line:#2a3a41;
+  --accent:#72b6d6; --accent-soft:#1b3340; --ucl:#ef7b64; --ucl-soft:#3a201b; --ok:#6cc290; --ok-soft:#18332a; --warn:#e0a84a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#10171b; --grid:rgba(111,179,210,.06); --card:#172126; --ink:#e2eaed; --muted:#93a5ac; --line:#2a3a41;
+  --accent:#72b6d6; --accent-soft:#1b3340; --ucl:#ef7b64; --ucl-soft:#3a201b; --ok:#6cc290; --ok-soft:#18332a; --warn:#e0a84a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:20px 20px;color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+.bar{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:12px 0;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--f-disp);font-size:1.25rem;letter-spacing:.04em;margin:0}
+.brand small{font-family:var(--f-body);font-size:.75rem;color:var(--muted);letter-spacing:.08em;margin-left:6px}
+.count{margin-left:auto;font-size:.8rem;color:var(--muted)}
+.count b{font-family:var(--f-num);color:var(--accent);font-size:1rem}
+nav.tabs{max-width:760px;margin:0 auto;padding-inline:8px;display:flex;overflow-x:auto}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px 8px;cursor:pointer;color:var(--muted);white-space:nowrap;font-weight:700;font-size:.9rem}
+nav.tabs button[aria-selected="true"]{color:var(--accent);border-color:var(--accent)}
+h2{font-family:var(--f-disp);font-size:1.15rem;margin:24px 0 10px;text-wrap:balance}
+.lbl{font-size:.72rem;letter-spacing:.12em;color:var(--muted);font-weight:700}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{padding:12px;border-left:3px solid var(--line)}
+.kpi .v{font-family:var(--f-num);font-size:1.5rem;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:.8rem;color:var(--muted);font-weight:400}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--accent);background:var(--accent);color:var(--card);border-radius:4px;padding:10px 16px;font-weight:700;cursor:pointer;min-height:44px}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.danger{background:transparent;border-color:var(--ucl);color:var(--ucl)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.start{display:grid;gap:10px}
+.start .btn{justify-content:space-between;text-align:left;width:100%}
+.start .btn span.sub{font-weight:400;font-size:.8rem;opacity:.85}
+/* 分野別の正答率バー（50%線＝分野合格目安） */
+.meter{position:relative;height:10px;background:var(--accent-soft);border-radius:2px;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--accent)}
+.meter i.low{background:var(--ucl)}
+.meter::after{content:"";position:absolute;left:70%;top:-2px;bottom:-2px;border-left:1px dashed var(--muted)}
+.catrow{display:grid;grid-template-columns:minmax(0,1fr) 64px;gap:4px 12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.catrow:last-child{border-bottom:0}
+.catrow .nm{font-size:.88rem;min-width:0}
+.catrow .pc{font-family:var(--f-num);text-align:right;font-size:.88rem;font-variant-numeric:tabular-nums}
+.catrow .meter{grid-column:1/-1}
+.catrow .n{font-size:.72rem;color:var(--muted)}
+/* 分野選択チップ */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:.82rem;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{border:0;background:var(--card);padding:8px 14px;cursor:pointer;font-size:.85rem}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--card);font-weight:700}
+/* 問題カード */
+.qhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.tag{font-size:.72rem;padding:2px 8px;border-radius:3px;background:var(--accent-soft);color:var(--accent);font-weight:700}
+.tag.calc{background:var(--ucl-soft);color:var(--ucl)}
+.qno{font-family:var(--f-num);color:var(--muted);font-size:.85rem}
+.prog{height:4px;background:var(--line);border-radius:2px;margin:12px 0;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.qtext{white-space:pre-wrap;font-size:1rem;margin:4px 0 14px;overflow-wrap:anywhere}
+.opts{display:grid;gap:8px}
+.opt{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:10px 12px;cursor:pointer;min-height:48px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt .bub{width:30px;height:20px;border:1.5px solid var(--muted);border-radius:50%;display:grid;place-items:center;font-family:var(--f-num);font-size:.75rem;color:var(--muted)}
+.opt .tx{overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.opt.sel .bub{background:var(--accent);border-color:var(--accent);color:var(--card)}
+.opt.sel{border-color:var(--accent)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.right .bub{background:var(--ok);border-color:var(--ok);color:var(--card)}
+.opt.wrong{border-color:var(--ucl);background:var(--ucl-soft)}
+.opt.wrong .bub{background:var(--ucl);border-color:var(--ucl);color:var(--card)}
+.opt:disabled{cursor:default}
+/* 正誤フィードバック：Duolingo風に色面で結果を返す */
+.fb{margin-top:14px;padding:14px 16px;border-radius:6px;border:2px solid var(--line);background:var(--paper);animation:fbIn .22s ease-out}
+.fb.ok{border-color:var(--ok);background:var(--ok-soft)}
+.fb.ng{border-color:var(--ucl);background:var(--ucl-soft)}
+.fb .res{font-weight:700;font-size:1.15rem;margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.fb.ok .res{color:var(--ok)} .fb.ng .res{color:var(--ucl)}
+.fb .mark{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:var(--card);font-size:1rem;flex:none}
+.fb.ok .mark{background:var(--ok)} .fb.ng .mark{background:var(--ucl)}
+.fb .streak{font-size:.8rem;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--card);color:var(--warn);border:1px solid var(--warn)}
+.fb p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.opt{transition:transform .08s ease,border-color .1s}
+.opt:active:not(:disabled){transform:scale(.98)}
+.opt.sel{background:var(--accent-soft);box-shadow:0 2px 0 var(--accent)}
+.opt.right{animation:pop .35s ease-out}
+.opt.wrong{animation:shake .35s ease-out}
+.btn.check{min-width:140px}
+.btn.check.ok{background:var(--ok);border-color:var(--ok)}
+.btn.check.ng{background:var(--ucl);border-color:var(--ucl)}
+.sound{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 10px;font-size:.75rem;cursor:pointer;color:var(--muted)}
+.sound[aria-pressed="true"]{color:var(--accent);border-color:var(--accent)}
+@keyframes fbIn{from{transform:translateY(8px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.04)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.qfoot{display:flex;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
+/* 模試 */
+.timer{font-family:var(--f-num);font-size:1.1rem;font-weight:600;font-variant-numeric:tabular-nums}
+.timer.low{color:var(--ucl)}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:4px;margin-top:10px}
+.qgrid button{border:1px solid var(--line);background:var(--card);border-radius:3px;padding:4px 0;font-family:var(--f-num);font-size:.75rem;cursor:pointer}
+.qgrid button.done{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.qgrid button.cur{outline:2px solid var(--accent)}
+.qgrid button.r{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.qgrid button.w{background:var(--ucl-soft);border-color:var(--ucl);color:var(--ucl)}
+.verdict{font-family:var(--f-disp);font-size:2rem;line-height:1.2}
+.verdict.pass{color:var(--ok)} .verdict.fail{color:var(--ucl)}
+.crit{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.crit div{border:1px solid var(--line);border-radius:4px;padding:10px;text-align:center}
+.crit .v{font-family:var(--f-num);font-size:1.3rem;font-weight:600}
+.crit .ok{color:var(--ok)} .crit .ng{color:var(--ucl)}
+.confirm{margin-top:10px;padding:12px;border:1px solid var(--ucl);border-radius:4px;background:var(--ucl-soft)}
+/* 数値表 */
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:4px;background:var(--card);max-height:60vh}
+table.nt{border-collapse:collapse;font-family:var(--f-num);font-size:.78rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.nt th,table.nt td{padding:4px 8px;text-align:right;border-bottom:1px solid var(--line)}
+table.nt thead th{position:sticky;top:0;background:var(--accent-soft);color:var(--accent);z-index:1}
+table.nt tbody th{color:var(--accent);position:sticky;left:0;background:var(--card)}
+table.nt tbody tr:nth-child(5n) td,table.nt tbody tr:nth-child(5n) th{border-bottom-color:var(--muted)}
+.note{font-size:.8rem;color:var(--muted);margin:8px 0 0}
+.sheet{position:fixed;inset:auto 0 0 0;z-index:20;background:var(--card);border-top:2px solid var(--accent);max-height:80vh;overflow:auto;padding-inline:16px;padding-block:12px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 24px rgba(0,0,0,.18)}
+.sheet .in{max-width:760px;margin:0 auto}
+.sheethead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+/* 管理図風の推移グラフ */
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--f-num);font-size:10px}
+.empty{color:var(--muted);font-size:.9rem;padding:8px 0}
+.status{font-size:.75rem;color:var(--muted)}
+.wronglist{display:grid;gap:10px;margin-top:10px}
+.wronglist .panel p{margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+/* 出題範囲との対応 */
+.syl{padding-block:4px}
+.syl details{border-bottom:1px solid var(--line)}
+.syl details:last-child{border-bottom:0}
+.syl summary{cursor:pointer;padding:10px 0;font-weight:700;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.syl summary .cnt{margin-left:auto;font-family:var(--f-num);font-weight:400;color:var(--muted);font-size:.85rem}
+.sylrow{display:grid;grid-template-columns:minmax(0,1fr) 3.4em 3.4em auto;gap:8px;align-items:center;padding:6px 0 6px 8px;font-size:.85rem;border-top:1px dashed var(--line)}
+.sylrow .num{font-family:var(--f-num);text-align:right;font-variant-numeric:tabular-nums}
+.sylrow .num.low{color:var(--ucl)}
+.sylrow .lv,.syl summary .lv{display:inline-block;margin-left:6px;font-size:.68rem;font-weight:400;padding:0 6px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.syl details.lv3 summary{color:var(--muted)}
+.btn.sm{min-height:32px;padding:4px 10px;font-size:.8rem}
+textarea{width:100%;box-sizing:border-box;margin-top:8px;padding:8px;font:inherit;font-size:.85rem;border:1px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink)}
+.report{margin-top:10px}.rprow{padding:10px 0;border-bottom:1px solid var(--line)}.rprow p{margin:4px 0}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:6px;font-size:.9rem;z-index:50;max-width:calc(100% - 32px)}
+/* 本試験形式：空欄の強調と多選択肢の2列表示 */
+mark.blank{background:var(--accent-soft);color:var(--accent);font-weight:700;padding:0 4px;border-radius:3px;border-bottom:2px solid var(--accent)}
+.tag.dai{background:var(--ok-soft);color:var(--ok)}
+.opts.many{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.opts.many .opt{min-height:44px;padding:8px 10px}
+/* 解説の下の関連資料 */
+.ref{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:.82rem;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;color:var(--muted)}
+.ref .lbl{margin-right:2px}
+.linkbtn{background:none;border:0;padding:4px 0;color:var(--accent);font-weight:700;text-decoration:underline;cursor:pointer;font-size:.82rem}
+/* 資料タブ */
+.links{display:grid;gap:0;padding-block:4px}
+.lnk{display:grid;gap:2px;padding:10px 0;border-bottom:1px solid var(--line)}
+.lnk:last-child{border-bottom:0}
+.lnk a{color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.lnk span{font-size:.8rem;color:var(--muted)}
+.refrow{display:grid;grid-template-columns:minmax(0,11em) minmax(0,1fr);gap:4px 12px;padding:10px 6px;border-bottom:1px solid var(--line);font-size:.85rem;border-radius:4px;transition:background .3s}
+.refrow:last-child{border-bottom:0}
+.refrow .nm{font-weight:700}
+.refrow .nm .lbl{display:block}
+.refrow.hit{background:var(--accent-soft)}
+.jis{font-family:var(--f-num);color:var(--accent);white-space:nowrap}
+.about p{margin:6px 0}
+.ver-big{font-family:var(--f-num);font-size:1.6rem;font-weight:600;color:var(--accent)}
+.ver-big small{font-family:var(--f-body);font-size:.8rem;color:var(--muted);font-weight:400;margin-left:10px}
+.hist{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:4px 10px;padding:6px 0;font-size:.85rem;border-bottom:1px solid var(--line)}
+.hist:last-child{border-bottom:0}
+.hist b{font-family:var(--f-num)}
+.hist .d{font-family:var(--f-num);color:var(--muted)}
+.appfoot{margin-top:32px;padding-top:12px;border-top:1px solid var(--line);font-size:.75rem;color:var(--muted);text-align:center}
+.appfoot .ver{font-family:var(--f-num);color:var(--accent);font-weight:600}
+@media (max-width:520px){.refrow{grid-template-columns:1fr}.hist{grid-template-columns:auto 1fr}.hist span:last-child{grid-column:1/-1}}
+@media (max-width:420px){.kpi .v{font-size:1.2rem}.crit .v{font-size:1.05rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.streakchip{font-family:var(--f-num);font-size:.78rem;font-weight:600;color:var(--warn);border:1px solid var(--warn);border-radius:999px;padding:1px 8px;align-self:center}
+.streakchip.pending{opacity:.6}
+.today .trow{display:flex;gap:14px;align-items:center}
+.flame{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-num);font-weight:600;font-size:1.3rem;border:2px solid var(--line);color:var(--muted)}
+.flame.on{border-color:var(--warn);color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+.gbar{height:10px;border-radius:999px;background:var(--accent-soft);overflow:hidden;margin-top:6px}
+.gbar i{display:block;height:100%;background:var(--ok);border-radius:999px;transition:width .3s}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
+.day{text-align:center;border:1px solid var(--line);border-radius:4px;padding:4px 0;font-size:.75rem}
+.day .w{display:block;color:var(--muted)}.day .m{display:block;font-family:var(--f-num);font-weight:600;min-height:1.4em}
+.day.ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}.day.fz{border-color:var(--accent);color:var(--accent)}
+.day.today{outline:2px solid var(--accent);outline-offset:1px}
+.story{font-family:var(--f-disp);margin:8px 0;line-height:1.8}
+.story.clear{color:var(--ok)}
+.pathmsg{font-weight:700;color:var(--accent);margin:8px 0 0}
+.chap{background:var(--card);border:1px solid var(--line);border-radius:6px;margin-bottom:10px;padding:0 14px}
+.chap>summary{display:flex;gap:12px;align-items:center;padding:12px 0;cursor:pointer;list-style:none}
+.chap>summary::-webkit-details-marker{display:none}
+.cno{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--accent);color:var(--accent);font-family:var(--f-num);font-weight:600}
+.chap.done .cno{background:var(--ok);border-color:var(--ok);color:var(--card)}
+.chap.locked .cno{border-color:var(--line);color:var(--muted)}
+.ct{font-weight:700}.ct small{display:block;font-weight:400;font-size:.78rem;color:var(--muted)}
+.chap[open]{padding-bottom:14px}
+.stages{display:grid;gap:8px}
+.stage{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--paper);border-radius:4px;padding:10px 12px;cursor:pointer;min-height:44px}
+.stage.done{border-left-color:var(--ok)}
+.stage:disabled{opacity:.45;cursor:not-allowed;border-left-color:var(--line)}
+.stage .sn small{display:block;font-size:.75rem;color:var(--muted)}
+.stars{font-size:1rem;color:var(--warn);white-space:nowrap;letter-spacing:.05em}
+.setgrid{display:grid;gap:14px}
+.oldhist summary{cursor:pointer;color:var(--accent);font-size:.85rem;margin-top:6px}
+
+/* ===================================================================
+   v1.6.0 外観：Android アプリの作法（上部アプリバー・下部ナビゲーション・ボトムシート）
+   図案の主役は「マークシートの楕円」。学習ロードの各ステージを塗りつぶす楕円で表す。
+   色は管理図の配色：中心線の青（主色）、管理限界の赤（不正解）、安定の緑（正解）、注意の琥珀（連続記録）。
+   =================================================================== */
+:root{--r-xl:24px;--r-lg:16px;--r-md:12px;--r-sm:8px;--pri:var(--accent);--on-pri:#fff;--pri-c:#d3e7f0;--on-pri-c:#0d3a4f;--surf2:#e9efed;--elev:0 1px 2px rgba(16,40,52,.08),0 2px 8px rgba(16,40,52,.06);--nav-h:72px;--flame:#c77412}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--hero-bg:#1b4256;--hero-fg:#e6f2f7;--pri-c:#1d3a48;--on-pri:#06212d;--on-pri-c:#cfe6f2;--surf2:#1d292e;--elev:0 1px 2px rgba(0,0,0,.4);--flame:#f0a43a}}
+:root[data-theme="dark"]{--hero-bg:#1b4256;--hero-fg:#e6f2f7;--pri-c:#1d3a48;--on-pri:#06212d;--on-pri-c:#cfe6f2;--surf2:#1d292e;--elev:0 1px 2px rgba(0,0,0,.4);--flame:#f0a43a}
+html{-webkit-tap-highlight-color:transparent;font-size:calc(16px * var(--fs,1))}
+/* 数字は桁がそろう等幅の数字にする（書体は本文と同じ） */
+body{font-variant-numeric:tabular-nums}
+body{font-size:calc(15px * var(--fs,1));-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+.wrap{padding-block:8px calc(var(--nav-h) + 32px + env(safe-area-inset-bottom,0px))}
+body.focus .wrap{padding-bottom:calc(190px + env(safe-area-inset-bottom,0px))}
+h2{font-family:var(--f-body);font-size:1.05rem;font-weight:700;margin:28px 4px 10px;letter-spacing:.02em}
+.lbl{letter-spacing:.04em;font-size:.75rem}
+.panel{border-radius:var(--r-lg);border-color:transparent;box-shadow:var(--elev);padding:18px}
+.note{line-height:1.6}
+/* アプリバー */
+header.appbar{position:sticky;top:0;z-index:15;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding-top:env(safe-area-inset-top,0px)}
+header.appbar .bar{max-width:760px;margin:0 auto;height:60px;padding:0 8px 0 16px;display:flex;align-items:center;gap:6px}
+.brandmark{width:28px;height:28px;flex:none;color:var(--pri)}
+.brand{font-family:var(--f-body);font-weight:700;font-size:1.08rem;letter-spacing:.02em;margin:0 auto 0 6px;white-space:nowrap}
+.iconbtn{width:48px;height:48px;border:0;background:transparent;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--ink);flex:none}
+.iconbtn:hover{background:var(--surf2)}
+.iconbtn svg,.bnav svg,.tile svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.streakbtn{display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 12px 0 8px;border-radius:999px;border:0;background:transparent;font-family:var(--f-num);font-weight:600;font-size:1rem;color:var(--muted);cursor:pointer}
+.streakbtn svg{width:22px;height:22px;fill:currentColor;stroke:none}
+.streakbtn.on{color:var(--flame)}
+/* 下部ナビゲーション */
+nav.bnav{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--card);box-shadow:0 -1px 0 var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.bnav .in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);height:var(--nav-h)}
+nav.bnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--muted);font-size:.72rem;font-weight:700;padding:0}
+nav.bnav .pill{width:56px;height:30px;border-radius:999px;display:grid;place-items:center;transition:background .2s}
+nav.bnav button[aria-selected="true"]{color:var(--ink)}
+nav.bnav button[aria-selected="true"] .pill{background:var(--pri-c);color:var(--on-pri-c)}
+body.focus nav.bnav{display:none}
+/* ボタン類 */
+.btn{border-radius:999px;min-height:48px;padding:10px 22px;letter-spacing:.02em;border:0}
+.btn.ghost{border:1px solid var(--line);color:var(--pri);background:var(--card)}
+.btn.tonal{background:var(--pri-c);color:var(--on-pri-c)}
+.btn.danger{border:1px solid var(--ucl)}
+.btn.sm{min-height:36px;padding:4px 14px}
+.btn.block{width:100%}
+.btn:active:not(:disabled){transform:scale(.98)}
+.seg{border-radius:999px;border-color:var(--line);background:var(--card)}
+.seg button{padding:9px 16px;min-height:40px}
+.seg button[aria-pressed="true"]{background:var(--pri-c);color:var(--on-pri-c)}
+.chip{border-radius:var(--r-sm);padding:8px 12px;min-height:36px}
+.chip[aria-pressed="true"]{background:var(--pri-c);color:var(--on-pri-c);border-color:transparent}
+/* サブタブ（演習：分野別／模擬試験、資料：資料／数値表） */
+.subtabs{display:flex;gap:4px;padding:4px;margin:8px 0 4px;background:var(--surf2);border-radius:999px}
+.subtabs button{flex:1;border:0;background:none;border-radius:999px;min-height:40px;font-weight:700;color:var(--muted);cursor:pointer}
+.subtabs button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:var(--elev)}
+/* ホーム：今日のカード */
+.hero{background:var(--hero-bg,var(--pri));color:var(--hero-fg,#fff);border-radius:var(--r-xl);padding:20px;margin-top:12px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:16px 16px;pointer-events:none}
+.hero>*{position:relative}
+.hero .exam{font-size:.85rem;opacity:.9}
+.hero .days{font-family:var(--f-num);font-size:3rem;font-weight:600;line-height:1;letter-spacing:-.02em}
+.hero .days small{font-family:var(--f-body);font-size:1rem;font-weight:700;margin-left:4px;letter-spacing:0}
+.hero .sub{font-size:.78rem;opacity:.85;margin-top:4px}
+.hero .row{display:flex;align-items:center;gap:16px}
+.ring{width:96px;height:96px;flex:none;margin-left:auto}
+.ring circle{fill:none;stroke-width:9}
+.ring .bg{stroke:color-mix(in srgb,currentColor 22%,transparent)}.ring .fg{stroke:currentColor;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
+.ring text{fill:currentColor;font-family:var(--f-num);font-weight:600;text-anchor:middle}
+.hero .goalline{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.22);display:flex;align-items:center;gap:10px;font-size:.88rem}
+.hero .goalline svg{width:22px;height:22px;fill:currentColor;flex:none}
+.week{gap:8px;margin-top:4px}
+.day{border:0;background:var(--surf2);border-radius:var(--r-md);padding:6px 0}
+.day.ok{background:var(--ok);color:#fff}.day.ok .w{color:rgba(255,255,255,.85)}
+.day.fz{background:var(--pri-c);color:var(--on-pri-c)}
+.day.today{outline:2px solid var(--pri);outline-offset:2px}
+/* ホーム：続きから・タイル */
+.cont{display:flex;gap:14px;align-items:center;cursor:pointer;width:100%;text-align:left;border:0;font:inherit;color:inherit}
+.cont .oval{flex:none}
+.cont .t{font-weight:700;font-size:1rem}.cont .s{font-size:.8rem;color:var(--muted)}
+.cont .go{margin-left:auto;color:var(--pri)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;border:0;border-radius:var(--r-lg);background:var(--card);box-shadow:var(--elev);cursor:pointer;text-align:left;min-height:112px;color:var(--ink);font:inherit}
+.tile .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--pri-c);color:var(--on-pri-c)}
+.tile b{font-size:.95rem}.tile span.sub{font-size:.75rem;color:var(--muted);line-height:1.4}
+.tile:disabled{opacity:.5;cursor:not-allowed}
+.tile:active:not(:disabled){transform:scale(.98)}
+.kpi{border-left:0;text-align:center}
+.kpi .v{font-size:1.6rem}
+/* 学習ロード：マークシートの楕円が連なる道 */
+.chapband{border-radius:var(--r-lg);padding:16px 18px;margin:24px 0 8px;background:var(--card);box-shadow:var(--elev);border-left:6px solid var(--pri)}
+.chapband.done{border-left-color:var(--ok)}.chapband.locked{border-left-color:var(--line)}
+.chapband .no{font-size:.78rem;color:var(--muted);font-weight:700}
+.chapband .tt{font-size:1.1rem;font-weight:700;margin:2px 0}
+.chapband .rl{font-size:.8rem;color:var(--muted)}
+.chapband details summary{cursor:pointer;color:var(--pri);font-size:.82rem;font-weight:700;margin-top:6px;list-style:none}
+.chapband details summary::-webkit-details-marker{display:none}
+.trail{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0 4px}
+.node{display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;cursor:pointer;font:inherit;color:inherit;padding:4px}
+.oval{width:76px;height:54px;border-radius:50%;border:3px solid var(--pri);display:grid;place-items:center;background:var(--card);color:var(--pri);font-family:var(--f-num);font-weight:600;font-size:1.15rem;box-shadow:0 4px 0 color-mix(in srgb,var(--pri) 35%,transparent);transition:transform .1s}
+.node:active .oval{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--pri) 35%,transparent)}
+.oval svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.node.done .oval{background:var(--ink);border-color:var(--ink);color:var(--paper);box-shadow:0 4px 0 color-mix(in srgb,var(--ink) 40%,transparent)}
+.node.cur .oval{background:var(--pri);color:var(--on-pri);animation:breathe 2.4s ease-in-out infinite}
+.node.locked{cursor:pointer}.node.locked .oval{border-style:dashed;border-color:var(--line);color:var(--muted);box-shadow:none;background:transparent}
+.node .nm{font-size:.78rem;font-weight:700;max-width:11em;text-align:center;line-height:1.35}
+.node.locked .nm{color:var(--muted);font-weight:400}
+.node .st{font-size:.8rem;color:var(--flame);letter-spacing:.08em;min-height:1em}
+.node.test .oval{width:120px;border-radius:999px;font-family:var(--f-body);font-size:.85rem}
+@keyframes breathe{0%,100%{box-shadow:0 4px 0 color-mix(in srgb,var(--pri) 35%,transparent),0 0 0 0 color-mix(in srgb,var(--pri) 30%,transparent)}50%{box-shadow:0 4px 0 color-mix(in srgb,var(--pri) 35%,transparent),0 0 0 10px transparent}}
+.rolebar{display:flex;align-items:center;gap:12px}
+.rolebar .meter{flex:1;height:8px;border-radius:999px}
+.rolebar .meter::after{display:none}
+.rolebar .meter i{border-radius:999px;background:var(--ok)}
+/* 問題画面：集中モード */
+.qtop{display:flex;align-items:center;gap:8px;margin:4px -8px 8px}
+.qtop .prog{flex:1;height:12px;border-radius:999px;margin:0;background:var(--surf2)}
+.qtop .prog i{border-radius:999px;background:var(--ok)}
+.qtop .cnt{font-family:var(--f-num);font-size:.85rem;color:var(--muted);min-width:3.5em;text-align:right}
+.qcard{background:transparent;box-shadow:none;padding:4px 0}
+.qtext{font-size:1.05rem;line-height:1.8}
+.opt{border-radius:var(--r-md);border:2px solid var(--line);border-bottom-width:4px;padding:12px 14px;min-height:56px;background:var(--card)}
+.opt .bub{width:32px;height:24px}
+.opt.sel{background:var(--pri-c);border-color:var(--pri);box-shadow:none}
+.opt.right{border-color:var(--ok)}.opt.wrong{border-color:var(--ucl)}
+.fb{border-radius:var(--r-lg);border-width:0;padding:16px 18px}
+.actionbar{position:fixed;left:0;right:0;bottom:0;z-index:16;background:var(--card);box-shadow:0 -1px 0 var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));transition:background .2s}
+.actionbar .in{max-width:760px;margin:0 auto;display:flex;flex-direction:column;align-items:stretch;gap:10px}
+.actionbar .in.row{flex-direction:row;align-items:center}
+.actionbar .in>.btn{width:100%;min-height:52px;font-size:1rem}
+.actionbar .in.row>.btn{width:auto}
+.actionbar .in.row>.btn.block{flex:1}
+.actionbar .msg{flex:1;min-width:0;font-weight:700;font-size:1.05rem;display:flex;align-items:center;gap:10px}
+.actionbar .msg .mk{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#fff;flex:none;font-size:1.1rem}
+.actionbar .btn{min-width:150px}
+.actionbar.ok{background:var(--ok-soft)}.actionbar.ok .msg{color:var(--ok)}.actionbar.ok .mk{color:var(--ok)}
+.actionbar.ng{background:var(--ucl-soft)}.actionbar.ng .msg{color:var(--ucl)}.actionbar.ng .mk{color:var(--ucl)}
+.actionbar.ok .btn{background:var(--ok)}.actionbar.ng .btn{background:var(--ucl)}
+.actionbar .btn.ghost{min-width:0}
+
+.mockhead{display:flex;align-items:center;gap:10px;margin:4px 0 8px}
+.mockhead .timer{margin-left:auto;padding:6px 14px;border-radius:999px;background:var(--surf2)}
+/* ボトムシート */
+#scrim{position:fixed;inset:0;z-index:19;background:rgba(10,20,26,.45);animation:fade .2s}
+.sheet{border-top:0;border-radius:28px 28px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.18);padding-top:8px;animation:up .25s cubic-bezier(.2,.8,.2,1)}
+.sheet .grab{width:36px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 10px}
+.sheethead{margin-bottom:12px}
+.sheethead strong{font-size:1.15rem}
+@keyframes up{from{transform:translateY(40px);opacity:.3}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+/* 設定の行 */
+.srow{display:flex;align-items:center;gap:12px;min-height:56px;padding:6px 0;border-bottom:1px solid var(--line)}
+.srow:last-child{border-bottom:0}
+.srow .t{flex:1;min-width:0}.srow .t b{display:block;font-size:.95rem}.srow .t span{display:block;font-size:.78rem;color:var(--muted);line-height:1.45}
+.srow.col{flex-direction:column;align-items:stretch}
+.switch{position:relative;width:52px;height:32px;flex:none;border:0;border-radius:999px;background:var(--surf2);box-shadow:inset 0 0 0 2px var(--muted);cursor:pointer;transition:background .2s}
+.switch::after{content:"";position:absolute;top:8px;left:8px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:all .2s}
+.switch[aria-checked="true"]{background:var(--pri);box-shadow:none}
+.switch[aria-checked="true"]::after{left:24px;top:4px;width:24px;height:24px;background:var(--on-pri)}
+select,input[type=time],input[type=date]{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:8px 10px;min-height:44px}
+.setcard{background:var(--paper);border-radius:var(--r-lg);padding:4px 16px;margin-bottom:12px}
+.setcard h3{font-size:.8rem;color:var(--pri);margin:12px 0 0}
+#toast{bottom:calc(var(--nav-h) + 20px + env(safe-area-inset-bottom,0px));border-radius:var(--r-sm);padding:12px 18px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+body.focus #toast{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+.appfoot{border-top:0}
+@media (prefers-reduced-motion:reduce){.node.cur .oval{animation:none}}
+/* 見やすさ・押しやすさ：操作部品は 44px 以上 */
+.btn.sm{min-height:44px}
+.chip,.seg button,.subtabs button{min-height:44px}
+.streakbtn{height:44px}
+.linkbtn{min-height:44px;display:inline-flex;align-items:center}
+.chapband details summary,.oldhist summary,.syl summary{min-height:44px;display:flex;align-items:center}
+.lnk a{display:inline-flex;align-items:center;min-height:44px}
+.switch,.blank2,.qgrid button{position:relative}
+.switch::before{content:"";position:absolute;inset:-8px -4px}
+button.blank2{min-height:40px}button.blank2::before{content:"";position:absolute;inset:-4px 0}
+.qgrid button{min-height:40px}.qgrid button::before{content:"";position:absolute;inset:-2px}
+/* ホーム：主ボタン・一覧 */
+.primary{display:flex;align-items:center;gap:14px;width:100%;margin-top:16px;padding:18px;border:0;border-radius:var(--r-lg);background:var(--pri);color:var(--on-pri);font:inherit;text-align:left;cursor:pointer;box-shadow:0 4px 0 color-mix(in srgb,var(--pri) 55%,#000)}
+.primary:active{transform:translateY(2px);box-shadow:0 2px 0 color-mix(in srgb,var(--pri) 55%,#000)}
+.primary .ic,.resume .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.18);flex:none}
+.primary svg,.resume svg,.lrow svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.primary b{display:block;font-size:1.1rem}.primary span span{font-size:.82rem;opacity:.9}.primary .go{margin-left:auto}
+.resume{border:2px solid var(--pri);margin-top:12px}.resume .ic{background:var(--pri-c);color:var(--on-pri-c)}
+.panel.list{padding:4px 0}
+.lrow{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:10px 16px;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer;border-bottom:1px solid var(--line)}
+.lrow:last-child{border-bottom:0}.lrow>span:nth-child(2){flex:1;min-width:0}.lrow b{display:block}.lrow span span{font-size:.8rem;color:var(--muted)}
+.lrow .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--pri-c);color:var(--on-pri-c);flex:none}
+.lrow>svg{color:var(--muted)}
+/* 解説：要点と詳しく */
+.fb .key{font-weight:700;margin:2px 0 4px}
+.more summary{cursor:pointer;color:var(--pri);font-weight:700;font-size:.88rem;padding:6px 0;min-height:44px;display:flex;align-items:center;list-style:none}
+.more summary::-webkit-details-marker{display:none}
+.more summary::after{content:"＋";margin-left:6px}.more[open] summary::after{content:"−"}
+.more p{margin:0 0 6px}
+/* 問題の切り替え */
+.qcard.enter{animation:slidein .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes slidein{from{transform:translateX(28px);opacity:0}to{transform:none;opacity:1}}
+/* レッスン終了画面 */
+.result{text-align:center;padding:24px 16px 16px;margin-top:12px;border-radius:var(--r-xl);background:var(--card);box-shadow:var(--elev)}
+.rring svg{width:132px;height:132px;display:block;margin:0 auto}
+.rring circle{fill:none;stroke-width:12}.rring .bg{stroke:var(--surf2)}.rring .fg{stroke:var(--ok);stroke-linecap:round;transition:stroke-dashoffset .8s ease}
+.result.bad .rring .fg{stroke:var(--flame)}
+.rring text{font-size:32px;font-weight:700;fill:var(--ink)}
+.rtitle{font-size:1.4rem;font-weight:700;margin-top:8px}.result.good .rtitle{color:var(--ok)}.result.bad .rtitle{color:var(--flame)}
+.rsub{font-size:.85rem;color:var(--muted)}
+.rstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.rstats div{background:var(--paper);border-radius:var(--r-md);padding:10px 4px}
+.rstats span{display:block;font-size:.72rem;color:var(--muted)}.rstats b{font-size:1.25rem}.rstats small{font-size:.7rem;font-weight:400;color:var(--muted)}
+.ractions{display:grid;gap:10px;margin-top:16px}
+/* 電卓 */
+.cdisp{position:relative;background:var(--paper);border-radius:var(--r-md);padding:10px 14px;margin-bottom:10px;text-align:right;min-height:84px}
+.cexp{font-size:1rem;color:var(--muted);min-height:1.6em;overflow-wrap:anywhere}
+.cres{font-size:2rem;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.cmem{position:absolute;left:12px;top:8px;font-size:.75rem;color:var(--pri);font-weight:700}
+.ckeys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ck{min-height:52px;border-radius:var(--r-md);border:0;font:inherit;font-size:1.15rem;font-weight:700;cursor:pointer;background:var(--card);color:var(--ink);box-shadow:var(--elev)}
+.ck.op{background:var(--surf2)}.ck.eq{background:var(--pri);color:var(--on-pri);grid-row:span 2}
+.ck:active{transform:scale(.97)}
+#calc .in{max-width:420px}
+/* 数値表の強調 */
+table.nt td.hl,table.nt th.hl{background:var(--ucl);color:#fff;font-weight:700;border-radius:3px}
+table.nt tr.hlrow td,table.nt tr.hlrow th{background:var(--ucl-soft)}
+/* 初回の案内 */
+#onb{position:fixed;inset:0;z-index:40;background:var(--paper);overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px calc(120px + env(safe-area-inset-bottom,0px))}
+body.onbopen{overflow:hidden}
+.oin{max-width:560px;margin:0 auto}
+.odots{display:flex;gap:6px;justify-content:center;margin:8px 0 4px}.odots i{width:28px;height:6px;border-radius:3px;background:var(--line)}.odots i.on{background:var(--pri)}
+.oskip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);right:12px;border:0;background:none;color:var(--muted);font:inherit;padding:10px;cursor:pointer}
+.obody{padding-top:16px}
+.ohero{display:grid;place-items:center;margin:24px 0 8px}.ohero .brandmark{width:96px;height:96px;border-radius:24px}
+.otitle{font-size:1.35rem;margin:12px 0 8px;text-align:left}
+.olist{list-style:none;padding:0;margin:16px 0;display:grid;gap:12px}.olist li{background:var(--card);border-radius:var(--r-lg);padding:14px 16px;box-shadow:var(--elev)}
+.olist b{display:block;margin-bottom:2px}.olist span{font-size:.88rem;color:var(--muted)}
+.ocards{display:grid;gap:10px;margin-top:14px}
+.ocard{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:14px 16px;border-radius:var(--r-lg);border:2px solid var(--line);border-bottom-width:4px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer;min-height:60px}
+.ocard span{font-size:.82rem;color:var(--muted)}
+.ocard[aria-pressed="true"]{border-color:var(--pri);background:var(--pri-c);color:var(--on-pri-c)}.ocard[aria-pressed="true"] span{color:inherit;opacity:.85}
+.opreview{margin:10px 0 0;padding:12px;border-radius:var(--r-md);background:var(--card);font-size:1.05rem;line-height:1.8}
+#onb .actionbar{z-index:41}
+/* 解説の図 */
+.qfig{margin:12px 0 4px;padding:10px 10px 8px;background:var(--card);border-radius:var(--r-md);color:var(--ink)}
+.qfig svg{display:block;width:100%;height:auto;max-height:240px}
+.qfig text{font-family:var(--f-body);font-size:10.5px;fill:var(--muted)}
+.qfig figcaption{font-size:.8rem;color:var(--muted);line-height:1.6;margin-top:4px}
+.f-line{fill:none;stroke:var(--pri);stroke-width:2.4;stroke-linejoin:round}.f-line.thin{stroke-width:1.6}
+.f-axis{stroke:var(--muted);stroke-width:1.2}.f-dash{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+.f-dash2{stroke:var(--pri);stroke-width:1.4;stroke-dasharray:4 3}
+.f-mark{stroke:var(--ucl);stroke-width:2}.f-mark2{stroke:var(--ok);stroke-width:2}
+.f-hl{fill:var(--ucl);opacity:.28}.f-hlt{fill:var(--ucl)!important;font-weight:700}.f-okt{fill:var(--ok)!important;font-weight:700}.f-pri{fill:var(--pri)!important;font-weight:700}
+.f-ucl{stroke:var(--ucl);stroke-width:1.4;stroke-dasharray:6 4}.f-cl{stroke:var(--pri);stroke-width:1.4}
+.f-pt{fill:var(--pri)}.f-out{fill:var(--ucl)}.f-bar{fill:var(--pri);opacity:.75}.f-box{fill:var(--pri-c);stroke:var(--pri);stroke-width:1.6}
+.f-box+text{fill:var(--on-pri-c)!important;font-weight:700;font-size:13px!important}
+/* 大問：本文中の空欄ボタン */
+.qtext.dai{line-height:2.3}
+.blank2{display:inline-flex;align-items:baseline;gap:4px;flex-wrap:wrap;vertical-align:baseline;margin:0 2px;padding:1px 10px;min-height:34px;border:2px dashed var(--muted);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer;line-height:1.5}
+.blank2 b{color:var(--muted);font-weight:700}
+.blank2.filled{border-style:solid;border-color:var(--pri);background:var(--pri-c);color:var(--on-pri-c)}
+.blank2.filled b{color:inherit}
+.blank2.act{border-style:solid;border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 30%,transparent)}
+.blank2.ok{border-style:solid;border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.blank2.ng{border-style:solid;border-color:var(--ucl);background:var(--ucl-soft);color:var(--ucl)}
+.blank2 .fix{color:var(--ok);font-weight:700}
+.blank2:disabled{cursor:default}
+.ghint{position:sticky;top:60px;z-index:2;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;padding:8px 12px;margin:4px 0 10px;border-radius:var(--r-md);background:var(--surf2);font-size:.88rem}
+.ghint span{margin-left:auto;font-family:var(--f-num);color:var(--muted);font-size:.8rem}
+.opt .used{display:block;font-size:.72rem;color:var(--pri);font-weight:700}
+.oxlist{display:grid;gap:10px;margin-top:6px}
+.oxrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px;border-radius:var(--r-md);background:var(--card);border:2px solid var(--line)}
+.oxrow.ok{border-color:var(--ok)}.oxrow.ng{border-color:var(--ucl)}
+.oxrow .t{font-size:.95rem;line-height:1.7}
+.oxbtns{display:flex;gap:6px}
+.oxb{width:48px;height:48px;border-radius:50%;border:2px solid var(--line);border-bottom-width:4px;background:var(--card);font-size:1.25rem;font-weight:700;cursor:pointer;color:var(--ink)}
+.oxb.on{border-color:var(--pri);background:var(--pri-c);color:var(--on-pri-c)}
+.oxb.right{border-color:var(--ok);background:var(--ok);color:#fff}
+.oxb.wrong{border-color:var(--ucl);background:var(--ucl-soft);color:var(--ucl)}
+.gex{padding:8px 0;border-top:1px dashed color-mix(in srgb,currentColor 25%,transparent)}
+.gex b{display:block}.gex.ok b{color:var(--ok)}.gex.ng b{color:var(--ucl)}
+.gex p{margin:2px 0 0;color:var(--ink)}
+.cont{background:none;padding:0}
+.crit>div{border:0;background:var(--surf2);border-radius:var(--r-md)}
+.crit div div{border:0;padding:0;background:none}
+.sheet .crit{margin-top:4px}
+</style>
+
+<header class="appbar">
+  <div class="bar">
+    <svg class="brandmark" viewBox="18 18 72 72" aria-hidden="true"><rect x="18" y="18" width="72" height="72" rx="18" fill="#1D5C7A"/><path fill="#FFFFFF" d="M42.266000000000005 48.144C39.032000000000004 48.144 37.052 45.207 37.052 40.092C37.052 35.34 39.032000000000004 32.535 42.266000000000005 32.535C45.5 32.535 47.513000000000005 35.34 47.513000000000005 40.092C47.513000000000005 45.207 45.5 48.144 42.266000000000005 48.144ZM50.45 59.43C52.397000000000006 59.43 53.981 59.1 54.938 58.605000000000004L53.882000000000005 54.315C53.123000000000005 54.579 52.166 54.777 51.11 54.777C49.13 54.777 46.919 54.15 45.797 52.467C50.516000000000005 51.015 53.519000000000005 46.626 53.519000000000005 40.092C53.519000000000005 32.073 48.965 27.485999999999997 42.266000000000005 27.485999999999997C35.567 27.485999999999997 31.013 32.04 31.013 40.092C31.013 47.022 34.379 51.543 39.593 52.698C41.375 56.625 45.104 59.43 50.45 59.43Z M68.968 52.962C72.169 52.962 74.908 51.741 76.987 49.332L73.885 45.635999999999996C72.73 46.89 71.179 47.88 69.199 47.88C65.734 47.88 63.49 45.042 63.49 40.158C63.49 35.373 66.097 32.535 69.265 32.535C71.014 32.535 72.301 33.327 73.555 34.449L76.624 30.686999999999998C74.941 28.971 72.367 27.485999999999997 69.166 27.485999999999997C62.929 27.485999999999997 57.451 32.172 57.451 40.356C57.451 48.672 62.731 52.962 68.968 52.962Z"/><path fill="#F5A623" d="M46.2895,57.982 H61.710499999999996 A11.0835,11.0835 0 0 1 72.794,69.0655 V69.0655 A11.0835,11.0835 0 0 1 61.710499999999996,80.149 H46.2895 A11.0835,11.0835 0 0 1 35.205999999999996,69.0655 V69.0655 A11.0835,11.0835 0 0 1 46.2895,57.982 Z"/><path fill="#1D5C7A" d="M40.858999999999995 75.5H49.631V72.95H47.318999999999996C46.741 72.95 45.873999999999995 73.035 45.245 73.12C47.18299999999999 71.165 49.053 68.768 49.053 66.592C49.053 64.178 47.352999999999994 62.614 44.904999999999994 62.614C43.102999999999994 62.614 41.946999999999996 63.242999999999995 40.705999999999996 64.569L42.355 66.201C42.967 65.555 43.629999999999995 64.977 44.497 64.977C45.516999999999996 64.977 46.145999999999994 65.606 46.145999999999994 66.762C46.145999999999994 68.598 44.020999999999994 70.893 40.858999999999995 73.766Z M61.463 68.224C61.174 67.187 60.97 66.048 60.783 64.858V64.161H62.211C62.007 65.436 61.735 66.932 61.463 68.224ZM51.449999999999996 71.114C51.348 72.525 51.11 74.055 50.668 75.041C51.178 75.228 52.096 75.653 52.521 75.925C52.912 74.99 53.235 73.562 53.405 72.151V77.115H55.547V72.032C55.818999999999996 72.848 56.108 73.766 56.227 74.395L57.144999999999996 74.072C56.805 74.667 56.397 75.228 55.887 75.721C56.431 75.993 57.281 76.656 57.672 77.047C59.236 75.449 60.018 73.324 60.409 71.233C60.732 72.066 61.089 72.814 61.531 73.511C60.817 74.225 60.018 74.82 59.117 75.262C59.626999999999995 75.619 60.443 76.537 60.783 77.064C61.582 76.622 62.346999999999994 76.044 63.027 75.347C63.792 76.078 64.71 76.673 65.798 77.149C66.121 76.52 66.801 75.585 67.294 75.143C66.189 74.752 65.271 74.208 64.489 73.528C65.679 71.709 66.54599999999999 69.397 67.02199999999999 66.592L65.543 66.065L65.152 66.133H64.115C64.37 64.722 64.608 63.294 64.77799999999999 62.019L63.129 61.815L62.772 61.9H57.4V64.161H58.658V66.745C58.658 68.394 58.539 70.689 57.757 72.763C57.553 72.151 57.315 71.488 57.077 70.92699999999999L55.547 71.42V70.213L56.346 70.162C56.414 70.434 56.482 70.706 56.516 70.944L58.233 70.179C58.062999999999995 69.176 57.434 67.663 56.788 66.49L55.19 67.15299999999999C55.36 67.493 55.53 67.85 55.683 68.224L54.289 68.275C55.342999999999996 66.949 56.464999999999996 65.351 57.382999999999996 63.94L55.394 63.039C55.019999999999996 63.838 54.527 64.739 53.983 65.64L53.643 65.215C54.238 64.263 54.918 62.954 55.547 61.763999999999996L53.422 60.982C53.166999999999994 61.849 52.742 62.92 52.3 63.838L51.994 63.566L50.838 65.266C51.501 65.912 52.266 66.779 52.742 67.527L52.129999999999995 68.343L50.838 68.394L51.041999999999994 70.519L53.405 70.366V71.454ZM63.69 68.326H64.353C64.013 69.601 63.537 70.723 62.942 71.692C62.381 70.80799999999999 61.939 69.805 61.599 68.68299999999999L63.571 68.904Z"/></svg>
+    <h1 class="brand">QC検定2級 ドリル</h1>
+    <button class="streakbtn" id="streakChip" aria-label="連続記録"></button>
+    <button class="iconbtn" id="setBtn" aria-haspopup="dialog" aria-label="設定"></button>
+  </div>
+</header>
+<main class="wrap" id="main"></main>
+<nav class="bnav" id="tabs" role="tablist" aria-label="メニュー"><div class="in"></div></nav>
+<div id="scrim" hidden></div>
+<div id="onb" role="dialog" aria-label="はじめに" hidden></div>
+<div id="toast" role="status" hidden></div>
+<div class="sheet" id="setSheet" role="dialog" aria-label="設定" hidden><div class="in"><div class="grab" aria-hidden="true"></div>
+  <div class="sheethead"><strong>設定</strong><button class="iconbtn" id="setClose" aria-label="閉じる"></button></div>
+  <div id="setBody"></div>
+</div></div>
+<div class="sheet" id="gsheet" role="dialog" hidden><div class="in"><div class="grab" aria-hidden="true"></div><div id="gsBody"></div></div></div>
+<div class="sheet" id="calc" role="dialog" aria-label="電卓" hidden><div class="in"><div class="grab" aria-hidden="true"></div><div id="calcBody"></div></div></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="数値表" hidden><div class="in"><div class="grab" aria-hidden="true"></div>
+  <div class="sheethead"><strong>数値表</strong><button class="iconbtn" id="sheetClose" aria-label="閉じる"></button></div>
+  <div id="sheetBody"></div>
+</div></div>
+
+<script>
+document.documentElement.lang='ja';   // 画面読み上げと日本語の字形のため
+// 起動時などに JavaScript のエラーが起きたら、白い画面のままにせず内容を画面に出す（不具合の報告用）
+(function(){
+  function show(msg){try{var b=document.getElementById('bootErr');if(!b){b=document.createElement('div');b.id='bootErr';
+    b.style.cssText='position:fixed;left:12px;right:12px;top:12px;z-index:99;background:#fff;color:#8a1c0c;border:2px solid #c03d2a;border-radius:12px;padding:12px 14px;font:14px/1.6 sans-serif;white-space:pre-wrap;word-break:break-all;box-shadow:0 4px 16px rgba(0,0,0,.25)';
+    b.textContent='エラーが発生しました。この表示をスクリーンショットして送ってください。\n';document.body.appendChild(b);}
+    b.textContent+=msg+'\n';}catch(e){}}
+  window.addEventListener('error',function(e){show((e.message||'error')+' @'+(e.lineno||'?')+':'+(e.colno||'?'));});
+  window.addEventListener('unhandledrejection',function(e){show('promise: '+(e.reason&&e.reason.message||e.reason));});
+})();
+</script>
+<script>
+const T=/*TABLES*/;
+/*BANK*/
+/*GEN*/
+// ===== 共通 =====
+// 試験回：公式に発表された回（res.js の EXAMS）から選ぶか、日付を自分で指定する（端末ごとに保存）
+function examSel(){let id='auto',d='';try{id=localStorage.getItem('qc2-exam')||'auto';d=localStorage.getItem('qc2-exam-date')||'';}catch(e){}return{id,d};}
+function curExam(){
+  const {id,d}=examSel(),today=dayKey(new Date());
+  if(id==='custom')return d?{label:'試験日',date:d,custom:true}:null;
+  if(id==='none')return null;
+  const e=EXAMS.find(x=>x.id===id)||EXAMS.find(x=>x.date>=today);
+  return e||null;
+}
+const daysTo=date=>Math.ceil((new Date(date+'T00:00:00')-new Date(dayKey(new Date())+'T00:00:00'))/864e5);
+const md=d=>{const [y,m,dd]=d.split('-');return `${+m}/${+dd}`;};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hash=s=>{let h=5381;for(const c of s)h=(h*33+c.charCodeAt(0))>>>0;return 'k'+h.toString(36);};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const BUB='①②③④⑤';
+const KANA='アイウエオカキクケコサシスセソタチツテト';
+const OXL=['○','×'];
+// 全問題の索引（知識問題はハッシュID、計算問題はジェネレータID、本試験形式は「セットID-空欄番号」）
+const ITEMS=[];
+// 問題文を直した問題は、元の問題文から作ったID（5番目の要素）を使い、進捗を引き継ぐ
+KB.forEach(([cat,q,ch,ex,id])=>ITEMS.push({id:id||hash(q),cat,kind:'k',q,ch,ex}));
+Object.entries(G).forEach(([id,g])=>ITEMS.push({id,cat:g.cat,kind:'g'}));
+const SETS={};
+DAI.forEach(s=>{
+  const ids=[];
+  if(s.type==='ox')s.items.forEach(([t,ok,ex,cat],k)=>{const id=s.id+'-'+(k+1);ids.push(id);ITEMS.push({id,cat:cat||s.cat,kind:'x',set:s.id,k,ox:true,t,ok,ex});});
+  else s.ans.forEach((a,k)=>{const id=s.id+'-'+(k+1);ids.push(id);ITEMS.push({id,cat:s.cat,kind:'x',set:s.id,k,a,ex:s.ex[k]});});
+  SETS[s.id]={...s,ids,field:CATS[s.cat].field};
+});
+const BYID=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+// 出題範囲（レベル表）の各項目に、該当する問題IDを割り当てる
+function itemText(i){
+  if(i.kind==='k')return i.q+' '+i.ch.join(' ')+' '+i.ex;
+  if(i.kind==='x'){const s=SETS[i.set];return i.ox?i.t+' '+i.ex:s.stem+' '+s.opts[i.a]+' '+i.ex;}
+  return '';
+}
+const SYLX=SYL.flatMap((g,gi)=>g.items.map(([name,lv,re,gens,tag],ii)=>({key:gi+'-'+ii,f:g.f,h:g.h,gtag:g.tag,lv3:!!(g.lv3||g.lv),name,lv,tag,
+  ids:ITEMS.filter(x=>CATS[x.cat].field===g.f&&(x.kind==='g'?(gens||[]).includes(x.id):re.test(itemText(x)))).map(x=>x.id)})));
+// 本試験形式の問題文：対象の空欄を強調し、他の空欄は番号だけ表示する
+function daiText(it,html){
+  const s=SETS[it.set];
+  if(it.ox){const t=`${s.stem}\n（${it.k+1}）${it.t}`;return html?esc(t):t;}
+  const src=html?esc(s.stem):s.stem;
+  return src.replace(/\{(\d+)\}/g,(m,n)=>+n===it.k+1?(html?`<mark class="blank">（${n}）</mark>`:`【（${n}）】`):`（${n}）`);
+}
+// 出題インスタンスを作る（選択肢はシャッフルし、正解インデックスを保持。本試験形式は選択肢群の順序を保つ）
+function instance(it){
+  if(it.kind==='x'){
+    const s=SETS[it.set];
+    return{id:it.id,cat:it.cat,kind:'x',set:it.set,k:it.k,ox:!!it.ox,q:daiText(it,false),qhtml:daiText(it,true),ex:it.ex,
+      choices:it.ox?['正しい','誤り']:s.opts.slice(),ans:it.ox?(it.ok?0:1):it.a,pick:null};
+  }
+  let q,ch,ex;
+  if(it.kind==='k'){q=it.q;ch=it.ch;ex=it.ex;}else{const r=G[it.id].f();q=r.q;ch=r.ch;ex=r.ex;}
+  const order=shuffle(ch.map((c,i)=>i));
+  return{id:it.id,cat:it.cat,kind:it.kind,q,ex,choices:order.map(i=>ch[i]),ans:order.indexOf(0),pick:null};
+}
+const labOf=it=>it.kind==='x'?(it.ox?OXL:KANA):BUB;
+// 本試験形式：セット単位で選び、空欄の順序を保って出題する（target 問に達するまでセットを足す）
+function buildSets(pool,target,weakFirst){
+  const ids=new Set(pool.map(i=>i.id));
+  let sets=shuffle([...new Set(pool.map(i=>i.set))]);
+  if(weakFirst){const w=new Set(weakIds().map(id=>BYID[id]&&BYID[id].set));sets.sort((a,b)=>(w.has(b)?1:0)-(w.has(a)?1:0));}
+  const out=[];
+  for(const sid of sets){if(out.length>=target)break;SETS[sid].ids.filter(id=>ids.has(id)).forEach(id=>out.push(id));}
+  return out.map(id=>instance(BYID[id]));
+}
+// 決まった問数ちょうどになるようにセットを選ぶ（模擬試験用）
+function fitSets(pool,target){
+  const out=[];
+  for(const sid of shuffle([...new Set(pool.map(i=>i.set))])){const n=SETS[sid].ids.length;if(out.length+n<=target)SETS[sid].ids.forEach(id=>out.push(id));}
+  return out;
+}
+
+// ===== 進捗の保存（アカウント保存 → 使えなければこの端末に保存） =====
+const EMPTY=()=>({stats:{},sessions:[],mocks:[],reports:[],daily:{},goal:10,path:{},chap:{}});
+let P=EMPTY();
+const store={mode:'local',db:null,ref:null,busy:false,dirty:false};
+function loadLocal(){try{const s=localStorage.getItem('qc2-progress');if(s)P=Object.assign(EMPTY(),JSON.parse(s));}catch(e){}}
+function saveLocal(){try{localStorage.setItem('qc2-progress',JSON.stringify(P));}catch(e){}}
+async function initStore(){
+  loadLocal();render();
+  try{
+    const c=window.claude;if(!c||!c.use)return;
+    const [db,user]=await Promise.all([c.use('db'),c.use('user')]);
+    if(!db||!user)return;
+    const uid=await user.id();if(!uid)return;
+    const ref=db.doc('data/users/'+uid+'/progress');
+    const snap=await ref.get();
+    if(snap.exists){const d=snap.data();P=Object.assign(EMPTY(),JSON.parse(JSON.stringify(d)));}
+    else if(Object.keys(P.stats).length){await ref.set(JSON.parse(JSON.stringify(P)));}
+    store.mode='cloud';store.db=db;store.ref=ref;saveLocal();syncNative();render();
+  }catch(e){store.mode='local';}
+}
+// 書込みは1件ずつ。連続回答はまとめて1回の書込みにする
+async function persist(){
+  saveLocal();syncNative();
+  if(store.mode!=='cloud')return;
+  if(store.busy){store.dirty=true;return;}
+  store.busy=true;
+  try{do{store.dirty=false;await store.ref.set(JSON.parse(JSON.stringify(P)));}while(store.dirty);}
+  catch(e){if(e&&e.code==='invalid_argument'){store.mode='local';render();}}
+  finally{store.busy=false;}
+}
+function record(id,ok){
+  const td=dayKey(new Date());P.daily=P.daily||{};P.daily[td]=(P.daily[td]||0)+1;
+  const s=P.stats[id]||{c:0,w:0,s:0,t:0};
+  if(ok){s.c++;s.s++;}else{s.w++;s.s=0;}
+  s.t=Date.now();
+  // 間隔反復：正解なら間隔を約2.5倍に延ばし（初回は1日）、不正解なら今日の復習に戻す
+  const iv=ivOf(s,true);
+  if(ok){s.iv=Math.min(120,iv?Math.round(iv*2.5):1);s.due=dayStart(s.t)+s.iv*864e5;}
+  else{s.iv=0;s.due=s.t;}
+  P.stats[id]=s;
+}
+// ===== 間隔反復 =====
+const dayStart=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime();};
+// 以前の版の記録（間隔の情報なし）は、連続正解数から間隔を推定する
+const IV0=[0,1,3,7,16,35];
+function ivOf(s,before){if(s.iv!=null)return s.iv;return before?IV0[Math.min(s.s-(s.s>0?1:0),5)]:IV0[Math.min(s.s,5)];}
+function dueOf(s){if(s.due!=null)return s.due;const iv=ivOf(s,false);return iv?dayStart(s.t)+iv*864e5:s.t;}
+// 今日（今日の終わりまで）に復習する問題。期限を過ぎた順
+function dueIds(){
+  const end=dayStart(Date.now())+864e5;
+  return Object.entries(P.stats).filter(([id,s])=>BYID[id]&&dueOf(s)<end).sort((a,b)=>dueOf(a[1])-dueOf(b[1])).map(([id])=>id);
+}
+// 定着度：間隔 21 日以上を「定着」、1〜20 日を「学習中」とする
+function srsSummary(){
+  const end=dayStart(Date.now())+864e5,r={due:0,tom:0,learn:0,firm:0};
+  for(const [id,s] of Object.entries(P.stats)){if(!BYID[id])continue;const d=dueOf(s),iv=s.iv!=null?s.iv:ivOf(s,false);
+    if(d<end)r.due++;else if(d<end+864e5)r.tom++;if(iv>=21)r.firm++;else r.learn++;}
+  return r;
+}
+// 苦手：一度でも間違え、まだ2連続正解していない問題
+const weakIds=()=>Object.entries(P.stats).filter(([id,s])=>BYID[id]&&s.w>0&&s.s<2).sort((a,b)=>(b[1].w-b[1].c)-(a[1].w-a[1].c)).map(([id])=>id);
+function catAcc(){
+  const r={};for(const k in CATS)r[k]={c:0,n:0};
+  for(const [id,s] of Object.entries(P.stats)){const it=BYID[id];if(!it)continue;r[it.cat].c+=s.c;r[it.cat].n+=s.c+s.w;}
+  return r;
+}
+function fieldAcc(){const a=catAcc(),f={'手法':{c:0,n:0},'実践':{c:0,n:0}};for(const k in a){f[CATS[k].field].c+=a[k].c;f[CATS[k].field].n+=a[k].n;}return f;}
+const pct=(c,n)=>n?Math.round(c/n*100):null;
+
+// ===== 連続記録 =====
+// 端末の日付（日本では JST）で集計する。1日の目標問題数を解いた日を「達成日」とする。
+const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+// 日別の記録を古い順にたどって、連続日数・最長記録・記録の保護（7日連続ごとに1回、最大2回。達成できなかった日を1日だけ埋める）を求める
+function streakInfo(){
+  const D=P.daily||{},goal=P.goal||10,today=new Date(),tk=dayKey(today);
+  const keys=Object.keys(D).filter(k=>D[k]>0).sort();
+  const res={cur:0,best:0,freeze:0,today:D[tk]||0,goal,done:(D[tk]||0)>=goal,used:new Set()};
+  if(!keys.length)return res;
+  let d=new Date(keys[0]+'T00:00:00'),cur=0,freeze=0;
+  while(dayKey(d)<tk){
+    const k=dayKey(d);
+    if((D[k]||0)>=goal){cur++;if(cur%7===0)freeze=Math.min(2,freeze+1);}
+    else if(cur>0&&freeze>0){freeze--;res.used.add(k);}
+    else cur=0;
+    res.best=Math.max(res.best,cur);d=addDays(d,1);
+  }
+  if(res.done)cur++;
+  res.cur=cur;res.best=Math.max(res.best,cur);res.freeze=freeze;return res;
+}
+// 直近7日の達成状況（✓達成・◆保護で継続・空欄）
+function weekHTML(st){
+  const D=P.daily||{},t=new Date(),W='日月火水木金土';
+  return `<div class="week">${[...Array(7)].map((_,i)=>{const d=addDays(t,i-6),k=dayKey(d),n=D[k]||0,ok=n>=st.goal,fz=st.used.has(k),isT=i===6;
+    return `<div class="day ${ok?'ok':fz?'fz':''} ${isT?'today':''}" title="${k}：${n}問"><span class="w">${W[d.getDay()]}</span><span class="m">${ok?'✓':fz?'◆':isT?n:''}</span></div>`;}).join('')}</div>`;
+}
+function syncStreakChip(){const st=streakInfo(),c=$('#streakChip');if(!c)return;c.innerHTML=ICON.flame+st.cur;c.classList.toggle('on',st.done);c.setAttribute('aria-label',`連続 ${st.cur} 日${st.done?'（今日は達成）':''}`);}
+function streakSheet(){
+  const st=streakInfo();
+  openG(`<div class="sheethead"><strong>連続 ${st.cur} 日</strong><button class="iconbtn" data-close aria-label="閉じる">${ICON.close}</button></div>
+  ${weekHTML(st)}
+  <div class="crit"><div><div class="lbl">今日</div><div class="v">${st.today}／${st.goal}</div></div><div><div class="lbl">最長記録</div><div class="v">${st.best}日</div></div><div><div class="lbl">記録の保護</div><div class="v">${st.freeze}</div></div></div>
+  <p class="note">1日の目標（${st.goal}問）を解いた日が1日に数えられます。7日続けるごとに「記録の保護」が1つ（最大2つ）たまり、できなかった日を1日だけ埋めます。目標の問題数は設定で変えられます。</p>`);
+}
+
+// ===== 学習ロード =====
+const STAGES={};
+PATH.forEach((ch,ci)=>ch.stages.forEach((sg,si)=>{
+  const ids=new Set();
+  if(sg.groups)SYLX.filter(x=>sg.groups.includes(x.h)).forEach(x=>x.ids.forEach(id=>ids.add(id)));
+  if(sg.cats)ITEMS.filter(x=>sg.cats.includes(x.cat)&&x.kind!=='x').forEach(x=>ids.add(x.id));
+  if(sg.sets)ITEMS.filter(x=>x.kind==='x'&&sg.sets.includes(x.set)).forEach(x=>ids.add(x.id));
+  if(sg.kind)ITEMS.filter(x=>x.kind===sg.kind).forEach(x=>ids.add(x.id));
+  STAGES[sg.id]=Object.assign({},sg,{ch,ci,si,ids:[...ids]});
+}));
+const stars=id=>((P.path||{})[id]||{}).s||0;
+const stageDone=id=>stars(id)>=PATH_RULE.starsToClear;
+const chapDone=ch=>ch.final?(P.mocks||[]).some(m=>m.pass)&&!!(P.chap||{})[ch.id]:!!(P.chap||{})[ch.id];
+// 章が開いているか：最初の章、または前の章を修了している
+const chapOpen=ci=>ci===0||chapDone(PATH[ci-1]);
+const stageOpen=st=>chapOpen(st.ci)&&(st.si===0||stageDone(st.ch.stages[st.si-1].id));
+// 最終章は「全ステージ修了」で章末扱い、模擬試験の合格で修了
+function finalReady(ch){return ch.stages.every(s=>stageDone(s.id));}
+function curChapter(){const i=PATH.findIndex(ch=>!chapDone(ch));return i<0?PATH.length-1:i;}
+function nextStage(){const ch=PATH[curChapter()];return ch.stages.map(s=>STAGES[s.id]).find(s=>!stageDone(s.id)&&stageOpen(s))||null;}
+const role=()=>{let r='見習い';PATH.forEach(ch=>{if(chapDone(ch))r=ch.role;});return r;};
+// レッスンの出題：まだ解いていない問題→苦手→その他の順に優先する
+function lessonList(st,n){
+  const pool=st.ids.map(id=>BYID[id]).filter(Boolean);
+  if(pool.length&&pool.every(i=>i.kind==='x'))return buildSets(pool,n,true);
+  // 優先順：今日の復習 → 未出題 → 苦手 → その他
+  const dd=new Set(dueIds()),w=new Set(weakIds()),rank=it=>dd.has(it.id)?0:!P.stats[it.id]?1:w.has(it.id)?2:3;
+  const ids=shuffle(pool.map(i=>i.id)).sort((a,b)=>rank(BYID[a])-rank(BYID[b])).slice(0,n);
+  return shuffle(ids).map(id=>instance(BYID[id]));
+}
+// 出題リストの一部を今日の復習の問題に入れ替える（大問以外、最大 k 問）
+function mixReview(list,k){
+  const have=new Set(list.map(x=>x.id)),due=dueIds().map(id=>BYID[id]).filter(it=>it.kind!=='x'&&!have.has(it.id)).slice(0,k);
+  due.forEach((it,i)=>{list[i]=instance(it);});return shuffle(list);
+}
+// 今日の復習：期限が来た問題を最大20問。大問の空欄は大問ごとまとめて出す
+function startReview(){
+  const all=dueIds().map(id=>BYID[id]),d=all.filter(it=>it.kind!=='x'),xs=all.filter(it=>it.kind==='x');
+  const list=buildList(d,Math.min(20,d.length),false).concat(xs.length&&d.length<20?buildSets(xs,20-d.length,false):[]);
+  if(list.length){quiz=null;startQuiz(list,'今日の復習');}
+}
+function startStage(id){const st=STAGES[id];if(!st||!stageOpen(st))return;quiz=null;startQuiz(lessonList(st,PATH_RULE.lesson),'ロード：'+st.name);quiz.stage=id;}
+function startChapTest(ci){
+  const ch=PATH[ci];if(ch.final){setView('mock');return;}
+  const pool=[...new Set(ch.stages.flatMap(s=>STAGES[s.id].ids))].map(id=>BYID[id]).filter(it=>it&&it.kind!=='x');
+  quiz=null;startQuiz(buildList(pool,PATH_RULE.testN,false),'章末テスト：'+ch.title);quiz.ctest=ci;
+}
+// レッスン・章末テストの終了時に呼ぶ。結果のメッセージを返す
+function finishPath(){
+  const n=quiz.list.length,r=quiz.correct/n;P.path=P.path||{};P.chap=P.chap||{};
+  if(quiz.stage){
+    const id=quiz.stage,o=P.path[id]||{s:0,b:0};o.b=Math.max(o.b,Math.round(r*100));
+    const was=stageDone(id);
+    if(r>=PATH_RULE.lessonPass){o.s=Math.min(3,o.s+1);P.path[id]=o;
+      const now=stageDone(id);quiz.pathMsg=now&&!was?`ステージ「${STAGES[id].name}」をクリア！`:`★ を1つ獲得（${o.s}／${PATH_RULE.starsToClear}）`;}
+    else{P.path[id]=o;quiz.pathMsg=`7割以上で ★ を獲得できます。もう一度挑戦しましょう。`;}
+  }
+  if(quiz.ctest!=null){
+    const ci=quiz.ctest,ch=PATH[ci];
+    if(r>=PATH_RULE.testPass){
+      // 飛び級：合格した章より前の章もまとめて修了にする
+      for(let i=0;i<=ci;i++){if(PATH[i].final)continue;P.chap[PATH[i].id]=true;PATH[i].stages.forEach(s=>{const o=P.path[s.id]||{s:0,b:0};if(o.s<PATH_RULE.starsToClear)o.s=PATH_RULE.starsToClear;P.path[s.id]=o;});}
+      quiz.pathMsg=`${ch.title} 修了。称号「${ch.role}」を獲得しました。`;quiz.story=ch.clear;
+    }else quiz.pathMsg=`合格は${PATH_RULE.testPass*100}%以上です。ステージで復習してから再挑戦しましょう。`;
+  }
+}
+
+// ===== アイコン =====
+const ICON={
+ home:'<svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20h-5.5v-5.5h-5V20H4z"/></svg>',
+ road:'<svg viewBox="0 0 24 24"><ellipse cx="7" cy="18" rx="3" ry="2.2"/><ellipse cx="17" cy="12" rx="3" ry="2.2"/><ellipse cx="7" cy="6" rx="3" ry="2.2"/><path d="M9.6 16.8 14.4 13.2M14.4 10.8 9.6 7.2"/></svg>',
+ practice:'<svg viewBox="0 0 24 24"><path d="M5 19h4L19.5 8.5l-4-4L5 15z"/><path d="m13.5 6.5 4 4"/></svg>',
+ stats:'<svg viewBox="0 0 24 24"><path d="M3 5.5h18" stroke-dasharray="2 2.4"/><path d="M3 20h18"/><path d="m4 15 4-4.5 3.5 3 4-6.5L20 12"/></svg>',
+ res:'<svg viewBox="0 0 24 24"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5z"/><path d="M5 20.5A2.5 2.5 0 0 1 7.5 18H19v3H7.5"/></svg>',
+ tune:'<svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>',
+ close:'<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
+ table:'<svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9 4.5v15"/></svg>',
+ flame:'<svg viewBox="0 0 24 24"><path d="M12.2 2.5c.6 3.3 5.3 5.5 5.3 11a5.5 5.5 0 0 1-11 0c0-2.4 1.1-4.1 2.3-5.2.1 2 1 3.2 2.2 3.6-.5-3.8.2-6.9 1.2-9.4z"/></svg>',
+ bolt:'<svg viewBox="0 0 24 24"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></svg>',
+ sheet:'<svg viewBox="0 0 24 24"><rect x="4.5" y="3" width="15" height="18" rx="2"/><ellipse cx="9" cy="8.5" rx="1.8" ry="1.3"/><ellipse cx="15" cy="8.5" rx="1.8" ry="1.3"/><path d="M8 14h8M8 17h5"/></svg>',
+ redo:'<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6"/><path d="M4 4v4.6h4.6"/></svg>',
+ timer:'<svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 2.5h5"/></svg>',
+ check:'<svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+ lock:'<svg viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>',
+ flag:'<svg viewBox="0 0 24 24"><path d="M6 21V4M6 4.5h11l-2.2 4L17 12.5H6"/></svg>',
+ chev:'<svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>',
+ calc:'<svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><rect x="8" y="6" width="8" height="3.5" rx=".6"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01" stroke-width="2.6"/></svg>',
+ resume:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m10 8.5 5 3.5-5 3.5z"/></svg>',
+};
+
+// ===== 画面 =====
+let view='home';
+let practiceSub='drill',resSub='res';   // 下部ナビの「演習」「資料」で前回開いていた画面
+const drill={cats:new Set(Object.keys(CATS)),count:10,kind:'all'};
+let quiz=null;   // 演習セッション
+let mock=null;   // 模擬試験セッション
+let tableTab='norm';
+let lastSyl=null;
+let lastCardKey='';
+
+const NAV=[['home','ホーム'],['road','ロード'],['practice','演習'],['stats','成績'],['resg','資料']];
+const navKey=v=>v==='drill'||v==='mock'?'practice':v==='res'||v==='tables'?'resg':v;
+function renderNav(){
+  const k=navKey(view);
+  $('#tabs .in').innerHTML=NAV.map(([id,l])=>`<button role="tab" data-nav="${id}" aria-selected="${k===id}"><span class="pill">${ICON[id==='resg'?'res':id]}</span>${l}</button>`).join('');
+}
+// 画面を切り替える。push=true のときは端末の「戻る」で前の画面に戻れるよう履歴に積む
+function setView(v,push=true){
+  if(v==='practice')v=practiceSub;if(v==='resg')v=resSub;
+  if(v==='drill'||v==='mock')practiceSub=v;if(v==='res'||v==='tables')resSub=v;
+  if(push&&v!==view)try{history.pushState({v},'');}catch(e){}
+  view=v;render();window.scrollTo(0,0);
+}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-nav]');if(b){sfx('tap');setView(b.dataset.nav);}});
+window.addEventListener('popstate',e=>{
+  if(sheetOpen()){closeSheets();try{history.pushState({v:view},'');}catch(x){}return;}
+  if(onb){if(onb.step>0){onb.step--;onbRefresh();}try{history.pushState({v:view},'');}catch(x){}return;}
+  if(quizActive()){try{history.pushState({v:view},'');}catch(x){}askQuit();return;}
+  setView((e.state&&e.state.v)||'home',false);
+});
+try{history.replaceState({v:'home'},'');}catch(e){}
+function countdown(){if(view==='home'&&!sheetOpen())render();}
+// ===== ボトムシート =====
+const SHEETS=['#setSheet','#sheet','#gsheet','#calc'];
+const sheetOpen=()=>SHEETS.some(id=>!$(id).hidden);
+function showSheet(id){SHEETS.forEach(x=>$(x).hidden=true);$('#scrim').hidden=false;$(id).hidden=false;}
+function closeSheets(){SHEETS.forEach(x=>$(x).hidden=true);$('#scrim').hidden=true;}
+$('#scrim').addEventListener('click',closeSheets);
+function openG(html){$('#gsBody').innerHTML=html;showSheet('#gsheet');}
+
+function render(){
+  const m=$('#main');
+  syncStreakChip();renderNav();
+  // 問題を解いている間は下部ナビを隠して集中モードにする
+  const focus=(view==='drill'&&quiz&&quiz.i<quiz.list.length)||(view==='mock'&&mock&&!mock.done);
+  document.body.classList.toggle('focus',!!focus);
+  if(view==='home')m.innerHTML=homeHTML();
+  else if(view==='road')m.innerHTML=roadHTML();
+  else if(view==='drill')m.innerHTML=quiz?quizHTML():drillSetupHTML();
+  else if(view==='mock')m.innerHTML=mock?mockHTML():mockStartHTML();
+  else if(view==='stats')m.innerHTML=statsHTML();
+  else if(view==='tables')m.innerHTML=subtabs('res')+tablesHTML('main');
+  else if(view==='res')m.innerHTML=subtabs('res')+resHTML();
+  if(quiz||mock)saveSession();
+  // 次の問題に進んだときだけ、カードを右から滑り込ませる
+  const key=view==='drill'&&quiz?'q'+quiz.i+'/'+quiz.list.length:view==='mock'&&mock&&!mock.done?'m'+mock.i:'';
+  if(key&&key!==lastCardKey){const c=m.querySelector('.qcard');if(c&&lastCardKey)c.classList.add('enter');}
+  lastCardKey=key;
+  if(!focus)m.insertAdjacentHTML('beforeend',`<footer class="appfoot">QC検定2級 ドリル <span class="ver">v${APP.version}</span>（${APP.date} 更新）・非公式の学習教材です</footer>`);
+}
+
+function subtabs(g){
+  const L=g==='practice'?[['drill','分野別演習'],['mock','模擬試験']]:[['res','資料'],['tables','数値表']];
+  return `<div class="subtabs" role="tablist">${L.map(([v,l])=>`<button data-v2="${v}" aria-pressed="${view===v}">${l}</button>`).join('')}</div>`;
+}
+// 今日の目標の円グラフ（SVG）
+// 結果画面の正答率の円
+function ringPct(p){const r=52,c=2*Math.PI*r;return `<svg viewBox="0 0 128 128" role="img" aria-label="正答率 ${p}%"><circle class="bg" cx="64" cy="64" r="${r}"/><circle class="fg" cx="64" cy="64" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p/100)}" transform="rotate(-90 64 64)"/><text x="64" y="72" text-anchor="middle">${p}<tspan font-size="16">%</tspan></text></svg>`;}
+function ringSVG(v,goal){
+  const r=40,c=2*Math.PI*r,p=Math.min(1,v/goal);
+  return `<svg class="ring" viewBox="0 0 96 96" role="img" aria-label="今日 ${v}／${goal} 問"><circle class="bg" cx="48" cy="48" r="${r}"/><circle class="fg" cx="48" cy="48" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p)}" transform="rotate(-90 48 48)"/><text x="48" y="50" font-size="22">${v}</text><text x="48" y="68" font-size="11" opacity=".85">／${goal}問</text></svg>`;
+}
+function homeHTML(){
+  const all=Object.values(P.stats).reduce((a,s)=>({c:a.c+s.c,n:a.n+s.c+s.w}),{c:0,n:0});
+  const f=fieldAcc(),w=weakIds().length;
+  const kp=(lab,v,sub,col)=>`<div class="panel kpi"><div class="lbl">${lab}</div><div class="v" style="color:${col}">${v}<small>${sub}</small></div></div>`;
+  const fc=x=>{const p=pct(x.c,x.n);return p==null?'var(--muted)':p>=50?'var(--ok)':'var(--ucl)';};
+  const fv=x=>pct(x.c,x.n)==null?'—':pct(x.c,x.n);
+  const last=P.mocks[P.mocks.length-1];
+  const st=streakInfo(),ns=nextStage(),ci=curChapter(),ch=PATH[ci],ex=curExam();
+  const dd=ex?daysTo(ex.date):null,today=dayKey(new Date());
+  const apply=ex&&ex.apply&&today<=ex.apply[1]?`申込受付 ${md(ex.apply[0])}〜${md(ex.apply[1])}${today<ex.apply[0]?'（受付前）':'（受付中）'}`:'';
+  const tile=(act,ic,t,sub,dis)=>`<button class="tile" data-act="${act}" ${dis?'disabled':''}><span class="ic">${ICON[ic]}</span><b>${t}</b><span class="sub">${sub}</span></button>`;
+  const cont=ns?{t:ns.name,s:`${ch.title}・★${stars(ns.id)}／${PATH_RULE.starsToClear}`,a:`data-stage="${ns.id}"`,o:ns.si+1}
+    :{t:ch.final?'最終試験：模擬試験':'章末テスト',s:ch.title,a:`data-ctest="${ci}"`,o:ICON.flag};
+  return `
+  <section class="hero" aria-label="今日の状況">
+    <div class="row">
+      <div style="min-width:0">
+        ${ex?(dd>=0?`<div class="exam">${esc(ex.label)}（${ex.date}）まで</div><div class="days">${dd}<small>日</small></div>`:`<div class="exam">${esc(ex.label)}は終了しました</div><div class="days" style="font-size:1.4rem">次の回を設定</div>`)
+          :`<div class="exam">今日も1問から</div><div class="days" style="font-size:1.6rem">${esc(role())}</div><button class="btn tonal sm" data-act="openset" style="margin-top:8px">試験日を設定</button>`}
+        ${apply?`<div class="sub">${apply}</div>`:''}
+      </div>
+      ${ringSVG(st.today,st.goal)}
+    </div>
+    <div class="goalline">${ICON.flame}<span>${st.done?`今日の目標を達成。連続 ${st.cur} 日`:st.cur?`あと ${st.goal-st.today} 問で連続 ${st.cur+1} 日目`:`あと ${st.goal-st.today} 問で連続記録がスタート`}${st.freeze?`・保護 ${st.freeze}`:''}</span></div>
+  </section>
+  <div class="panel" style="margin-top:12px;padding:12px">${weekHTML(st)}</div>
+
+  ${(()=>{const ses=loadSession();if(!ses)return '';const L=ses.k==='mock'?ses.m.list:ses.q.list,i=ses.k==='mock'?ses.m.list.filter(x=>x.pick!=null).length:ses.q.i,lab=ses.k==='mock'?'模擬試験':ses.q.label;
+    const left=ses.k==='mock'?Math.max(0,Math.ceil((ses.m.end-Date.now())/60e3)):null;
+    return `<div class="panel resume" role="region" aria-label="中断した演習"><button class="cont" data-act="resume"><span class="ic">${ICON.resume}</span><span style="min-width:0"><span class="t">続きから再開：${esc(lab)}</span><br><span class="s">${i}／${L.length} 問まで解答${left!=null?`・残り ${left} 分（時間は進んでいます）`:''}</span></span><span class="go">${ICON.chev}</span></button><button class="linkbtn" data-act="dropsession" style="margin-top:6px">この続きを破棄する</button></div>`;})()}
+  ${(()=>{const due=dueIds().length;
+    // いちばん大きなボタン：今日の復習があれば復習、なければロードの続き
+    const main=due?{a:'data-act="review"',t:`今日の復習 ${due}問`,s:'忘れかけた問題から解きます',ic:ICON.redo}:{a:cont.a,t:ns?`続きから：${cont.t}`:cont.t,s:cont.s,ic:ICON.flag};
+    return `<button class="primary" ${main.a}><span class="ic">${main.ic}</span><span style="min-width:0"><b>${esc(main.t)}</b><span>${esc(main.s)}</span></span><span class="go">${ICON.chev}</span></button>`;})()}
+
+  <h2>ほかの演習</h2>
+  <div class="panel list">
+    ${dueIds().length?`<button class="lrow" ${cont.a}><span class="ic">${ICON.flag}</span><span><b>学習ロードの続き</b><span>${esc(cont.t)}</span></span>${ICON.chev}</button>`:''}
+    <button class="lrow" data-act="quick"><span class="ic">${ICON.bolt}</span><span><b>全分野から10問</b><span>計算・知識をランダムに</span></span>${ICON.chev}</button>
+    <button class="lrow" data-act="dai"><span class="ic">${ICON.sheet}</span><span><b>本試験形式</b><span>大問の穴埋め・正誤</span></span>${ICON.chev}</button>
+    <button class="lrow" data-act="gomock"><span class="ic">${ICON.timer}</span><span><b>模擬試験</b><span>50問・90分で合否判定</span></span>${ICON.chev}</button>
+  </div>
+  <p class="status" style="margin-inline:4px">${store.mode==='cloud'?'進捗はアカウントに保存されます（別の端末でも続きから）。':'進捗はこの端末に保存されます。'}</p>`;
+}
+
+// ===== 学習ロード：章ごとにマークシートの楕円を縫うように並べる =====
+const ZIG=[0,56,84,56,0,-56,-84,-56];
+function roadHTML(){
+  const all=Object.keys(STAGES).length,done=Object.keys(STAGES).filter(stageDone).length;
+  let k=0;
+  return `<div class="panel" style="margin-top:12px"><div class="rolebar"><div style="min-width:0"><div class="lbl">いまの称号</div><b style="font-size:1.1rem">${esc(role())}</b></div><div class="meter" aria-label="ステージ ${done}／${all}"><i style="width:${done/all*100}%"></i></div><span class="timer" style="font-size:.9rem">${done}/${all}</span></div></div>
+  ${PATH.map((ch,ci)=>{const open=chapOpen(ci),cd=chapDone(ch);
+    const nodes=ch.stages.map(sg=>{const S=STAGES[sg.id],o=stageOpen(S),d=stageDone(sg.id),cur=o&&!d&&nextStage()&&nextStage().id===sg.id,n=stars(sg.id);
+      const x=ZIG[(k++)%ZIG.length];
+      return `<button class="node ${d?'done':cur?'cur':o?'':'locked'}" data-node="${sg.id}" style="transform:translateX(${x}px)" aria-label="${esc(sg.name)}${d?'（クリア）':o?'':'（未解放）'}"><span class="oval">${d?ICON.check:o?S.si+1:ICON.lock}</span><span class="nm">${esc(sg.name)}</span><span class="st">${n?'★'.repeat(Math.min(n,3)):''}</span></button>`;}).join('');
+    return `<section class="chapband ${cd?'done':open?'':'locked'}"><div class="no">${ch.final?'最終章':'第'+(ci+1)+'章'}${cd?'・修了':''}</div><div class="tt">${esc(ch.title.replace(/^第\d+章 |^最終章 /,''))}</div><div class="rl">修了すると称号「${esc(ch.role)}」</div>
+      <details ${ci===curChapter()&&!cd?'open':''}><summary>${cd?'物語の結末を読む':'物語を読む'}</summary><p class="story">${esc(ch.intro)}</p>${cd?`<p class="story clear">${esc(ch.clear)}</p>`:''}</details></section>
+      <div class="trail">${nodes}<button class="node test ${cd?'done':''}" data-tnode="${ci}"><span class="oval">${cd?ICON.check:ch.final?'最終試験':'章末テスト'}</span><span class="nm">${ch.final?'模擬試験で合格':open?`${PATH_RULE.testN}問・8割で修了`:'飛び級テストを受けられます'}</span></button></div>`;}).join('')}
+  <p class="note" style="text-align:center">登場する会社・人物は架空です。</p>`;
+}
+// ステージの詳細シート
+function stageSheet(id){
+  const S=STAGES[id],o=stageOpen(S),n=stars(id),b=((P.path||{})[id]||{}).b;
+  openG(`<div class="sheethead"><strong>${esc(S.name)}</strong><button class="iconbtn" data-close aria-label="閉じる">${ICON.close}</button></div>
+  <p class="note" style="margin-top:0">${esc(S.ch.title)}・${S.ids.length}問から出題</p>
+  <div class="crit"><div><div class="lbl">★</div><div class="v">${n}／${PATH_RULE.starsToClear}</div></div><div><div class="lbl">最高正答率</div><div class="v">${b!=null?b+'%':'—'}</div></div><div><div class="lbl">1回</div><div class="v">${PATH_RULE.lesson}問</div></div></div>
+  <p class="note">7割以上で ★ を1つ獲得。★${PATH_RULE.starsToClear}つでクリアし、次のステージが開きます。</p>
+  ${o?`<button class="btn block" data-stage="${id}" style="margin-top:12px">${stageDone(id)?'もう一度練習する':'レッスンを始める'}</button>`
+     :`<p class="note">${chapOpen(S.ci)?'前のステージをクリアすると開きます。':'前の章を修了すると開きます。分かっている範囲なら、章末の「飛び級テスト」で先に進めます。'}</p><button class="btn ghost block" data-ctest="${S.ci}" style="margin-top:12px">飛び級テストを受ける（${PATH_RULE.testN}問）</button>`}`);
+}
+function testSheet(ci){
+  const ch=PATH[ci],open=chapOpen(ci),cd=chapDone(ch),ready=ch.stages.every(s=>stageDone(s.id));
+  openG(`<div class="sheethead"><strong>${ch.final?'最終試験':open?'章末テスト':'飛び級テスト'}</strong><button class="iconbtn" data-close aria-label="閉じる">${ICON.close}</button></div>
+  <p class="note" style="margin-top:0">${esc(ch.title)}</p>
+  <p>${ch.final?`本番と同じ50問・90分の模擬試験で合格基準を超えると、物語が完結します。${ready?'':'先にこの章のステージをすべてクリアしてください。'}`
+     :`この章の範囲から${PATH_RULE.testN}問。8割以上で修了し、称号「${esc(ch.role)}」を獲得します。${open?'':'合格すると、この章までのすべての章が修了扱いになります。'}`}</p>
+  <button class="btn block" data-ctest="${ci}" ${ch.final&&!ready?'disabled':''}>${ch.final?'模擬試験を始める':cd?'もう一度受ける':'テストを始める'}</button>`);
+}
+
+function drillSetupHTML(){
+  const acc=catAcc();
+  const grp=f=>Object.entries(CATS).filter(([k,c])=>c.field===f).map(([k,c])=>{const p=pct(acc[k].c,acc[k].n);return `<button class="chip" data-cat="${k}" aria-pressed="${drill.cats.has(k)}">${c.name}${p!=null?` <span style="font-family:var(--f-num);opacity:.7">${p}%</span>`:''}</button>`;}).join('');
+  const seg=(key,vals)=>`<div class="seg">${vals.map(([v,l])=>`<button data-set="${key}" data-val="${v}" aria-pressed="${String(drill[key])===String(v)}">${l}</button>`).join('')}</div>`;
+  const n=poolFor().length;
+  return subtabs('practice')+`
+  <h2>分野を選ぶ</h2>
+  <div class="panel" style="display:grid;gap:14px">
+    <div><div class="lbl">品質管理の手法</div><div class="chips" style="margin-top:6px">${grp('手法')}</div></div>
+    <div><div class="lbl">品質管理の実践</div><div class="chips" style="margin-top:6px">${grp('実践')}</div></div>
+    <div class="actions"><button class="btn ghost" data-act="allcats">すべて選択</button><button class="btn ghost" data-act="nocats">選択を解除</button></div>
+  </div>
+  <h2>出題の設定</h2>
+  <div class="panel" style="display:grid;gap:12px">
+    <div><div class="lbl">問題の種類</div>${seg('kind',[['all','すべて'],['g','計算'],['k','知識'],['x','本試験形式']])}</div>
+    <div><div class="lbl">問題数</div>${seg('count',[[10,'10問'],[20,'20問'],[30,'30問']])}</div>
+    <p class="note" style="margin:0">対象 ${n} 問（計算問題は毎回数値が変わります${drill.kind==='x'?'。本試験形式は大問単位で出すため、問題数が少し増えることがあります':''}）</p>
+    <div><button class="btn" data-act="startdrill" ${n?'':'disabled'}>演習を始める</button></div>
+  </div>`;
+}
+function poolFor(){return ITEMS.filter(i=>drill.cats.has(i.cat)&&(drill.kind==='all'||i.kind===drill.kind));}
+// 出題リスト作成：苦手を少し優先しつつ、種類が足りなければ計算問題を数値を変えて重ねる
+function buildList(pool,n,weakFirst){
+  if(pool.length&&pool.every(i=>i.kind==='x'))return buildSets(pool,n,weakFirst);
+  let ids=shuffle(pool.map(i=>i.id));
+  if(weakFirst){const w=new Set(weakIds());ids.sort((a,b)=>(w.has(b)?1:0)-(w.has(a)?1:0));}
+  const out=ids.slice(0,n);const gens=pool.filter(i=>i.kind==='g');
+  while(out.length<n&&gens.length)out.push(gens[Math.floor(Math.random()*gens.length)].id);
+  return shuffle(out).map(id=>instance(BYID[id]));
+}
+function startQuiz(list,label){const from=view==='drill'&&quiz?(quiz.from||'home'):view;quiz={list,i:0,label,correct:0,t0:Date.now(),from};
+  // 演習を始めたら履歴を1段積む（端末の戻るボタンでアプリが閉じず、やめる確認が出るように）
+  if(view!=='drill')setView('drill');else{try{history.pushState({v:'drill'},'');}catch(e){}render();window.scrollTo(0,0);}}
+// 解いている途中の模擬試験を端末に保存する（アプリが閉じられても続きから再開できる）
+// 削除するのは「解き終えた・自分で中断した」ときだけ。何も解いていない状態（起動直後など）では保存も削除もしない
+function saveSession(){
+  try{
+    if(mock&&!mock.done){localStorage.setItem('qc2-session',JSON.stringify({k:'mock',m:mock,t:Date.now()}));return;}
+    // 通常の演習は保存しない（短いので、やめたらリセット）
+  }catch(e){}
+}
+function loadSession(){try{const d=JSON.parse(localStorage.getItem('qc2-session')||'null');return d&&d.k==='mock'?d:null;}catch(e){return null;}}
+// 演習を途中でやめるとき：進み具合がリセットされることを確認してからやめる
+const quizActive=()=>view==='drill'&&quiz&&quiz.i<quiz.list.length;
+function askQuit(){
+  const done=quiz.list.filter(x=>x.checked).length;
+  if(!done){quitQuiz();return;}
+  openG(`<div class="sheethead"><strong>演習をやめますか？</strong><button class="iconbtn" data-close aria-label="閉じる">${ICON.close}</button></div>
+  <p>ここでやめると、この演習の進み具合（${quiz.list.length}問中 ${done}問 解答）は<b>リセット</b>され、続きから再開できません。</p>
+  <p class="note">解答済みの問題の正誤は、成績と復習の予定に残ります。</p>
+  <div class="ractions"><button class="btn block" data-close>続ける</button><button class="btn danger block" data-quitok>やめる（リセット）</button></div>`);
+}
+function quitQuiz(){const to=quiz&&quiz.from&&quiz.from!=='drill'?quiz.from:'drill';quiz=null;closeSheets();setView(to);}
+function resumeSession(){
+  const d=loadSession();if(!d)return;
+  if(d.k==='quiz'){quiz=d.q;setView('drill');}
+  else{mock=d.m;setView('mock');if(mock.end-Date.now()<=0)finishMock();else tick();}
+}
+function dropSession(){try{localStorage.removeItem('qc2-session');}catch(e){}render();}
+// 画面を離れるとき・裏に回るときにも保存する
+document.addEventListener('visibilitychange',()=>{if(document.hidden)saveSession();});
+window.addEventListener('pagehide',saveSession);
+
+// 解説を「要点（最初の1文）」と「詳しく（残りの説明と図）」に分ける。間違えたときは最初から開いておく
+function exBody(ex,fig,open){
+  const m=String(ex).match(/^(.+?。)(.*)$/s),key=m?m[1]:ex,rest=m?m[2].trim():'';
+  if(!rest&&!fig)return `<p class="key">${esc(key)}</p>`;
+  if(String(ex).length<=60&&!fig)return `<p class="key">${esc(ex)}</p>`;
+  return `<p class="key">${esc(key)}</p><details class="more" ${open?'open':''}><summary>詳しく</summary>${rest?`<p>${esc(rest)}</p>`:''}${fig}</details>`;
+}
+function qCard(it,idx,total,reveal){
+  const c=CATS[it.cat],L=labOf(it),x=it.kind==='x',s=x?SETS[it.set]:null;
+  return `<div class="qcard">
+    <div class="qhead"><span class="tag">${c.field}｜${c.name}</span>${it.kind==='g'?'<span class="tag calc">計算</span>':''}${x?`<span class="tag dai">本試験形式｜${esc(s.title)}（${it.k+1}／${s.ids.length}）</span>`:''}</div>
+    <div class="qtext">${x?it.qhtml:esc(it.q)}</div>
+    ${x&&!it.ox?`<div class="lbl" style="margin-bottom:6px">（${it.k+1}）に入る最も適切なものを選べ</div>`:''}
+    <div class="opts${x&&!it.ox?' many':''}">${it.choices.map((ch,j)=>{let cl='opt';if(reveal){if(j===it.ans)cl+=' right';else if(j===it.pick)cl+=' wrong';}else if(j===it.pick)cl+=' sel';
+      return `<button class="${cl}" data-pick="${j}" ${reveal?'disabled':''}><span class="bub">${L[j]}</span><span class="tx">${esc(ch)}</span></button>`;}).join('')}</div>
+    ${reveal?(()=>{const ok=it.pick===it.ans;return `<div class="fb ${ok?'ok':'ng'}"><div class="res">${ok?'解説':'正答は '+L[it.ans]+(x&&!it.ox?' '+esc(it.choices[it.ans]):'')}</div>${exBody(it.ex,figFor(it.q+' '+it.ex),!ok)}${refLine(it.cat)}${view==='drill'?reportBox(it):''}</div>`;})():''}
+  </div>`;
+}
+// 本試験形式の大問：同じ大問の空欄が続く範囲 [s, e) を返す（大問以外は1問だけ）
+function grpRange(list,i){
+  const it=list[i];if(!it||it.kind!=='x')return[i,i+1];
+  let s=i,e=i+1;
+  while(s>0&&list[s-1].kind==='x'&&list[s-1].set===it.set)s--;
+  while(e<list.length&&list[e].kind==='x'&&list[e].set===it.set)e++;
+  return[s,e];
+}
+// 未入力の空欄のうち最初のもの（なければ先頭）
+const firstOpen=(list,s,e)=>{for(let j=s;j<e;j++)if(list[j].pick==null)return j;return s;};
+// 大問カード：本文の空欄をタップして選び、下の選択肢で埋める。○×は文ごとに選ぶ
+function groupCard(list,s,e,act,reveal,inDrill){
+  const items=list.slice(s,e),S=SETS[items[0].set],c=CATS[items[0].cat],ox=items[0].ox;
+  const head=`<div class="qhead"><span class="tag">${c.field}｜${c.name}</span><span class="tag dai">本試験形式｜${esc(S.title)}</span></div>`;
+  const nOk=items.filter(it=>it.pick===it.ans).length,filled=items.filter(it=>it.pick!=null).length;
+  let body='';
+  if(ox){
+    body=`<div class="qtext">${esc(S.stem)}</div><div class="oxlist">${items.map((it,j)=>{const li=s+j,src=BYID[it.id],ok=it.pick===it.ans;
+      const b=(v,l)=>`<button class="oxb ${it.pick===v?'on':''} ${reveal&&it.ans===v?'right':''} ${reveal&&it.pick===v&&!ok?'wrong':''}" data-ox="${li}" data-val="${v}" ${reveal?'disabled':''} aria-pressed="${it.pick===v}">${l}</button>`;
+      return `<div class="oxrow ${reveal?(ok?'ok':'ng'):''}"><div class="t"><b>（${it.k+1}）</b>${esc(src.t)}</div><div class="oxbtns">${b(0,'○')}${b(1,'×')}</div></div>`;}).join('')}</div>`;
+  }else{
+    const byK={};items.forEach((it,j)=>byK[it.k+1]=s+j);
+    const stem=esc(S.stem).replace(/\{(\d+)\}/g,(m,n)=>{
+      const li=byK[n];if(li==null)return `（${n}）`;
+      const it=list[li],ok=it.pick===it.ans;
+      const cls=['blank2',it.pick!=null?'filled':'',li===act&&!reveal?'act':'',reveal?(ok?'ok':'ng'):''].join(' ');
+      return `<button class="${cls}" data-blank="${li}" ${reveal?'disabled':''} aria-label="空欄${n}"><b>（${n}）</b>${it.pick!=null?`<span>${KANA[it.pick]} ${esc(S.opts[it.pick])}</span>`:''}${reveal&&!ok?`<span class="fix">→ ${KANA[it.ans]} ${esc(S.opts[it.ans])}</span>`:''}</button>`;});
+    const cur=list[act];
+    body=`<div class="qtext dai">${stem}</div>
+    ${reveal?'':`<div class="ghint"><b>（${cur.k+1}）</b>に入るものを選んでください<span>${filled}／${items.length} 入力済み</span></div>`}
+    <div class="opts many">${S.opts.map((o,j)=>{const used=items.filter(it=>it.pick===j).map(it=>it.k+1);
+      return `<button class="opt ${!reveal&&cur.pick===j?'sel':''}" data-gpick="${j}" ${reveal?'disabled':''}><span class="bub">${KANA[j]}</span><span class="tx">${esc(o)}${used.length?`<small class="used">${used.map(n=>'（'+n+'）').join('')}</small>`:''}</span></button>`;}).join('')}</div>`;
+  }
+  const exs=reveal?`<div class="fb ${nOk===items.length?'ok':'ng'}"><div class="res">${items.length}問中 ${nOk}問 正解</div>${items.map(it=>{const ok=it.pick===it.ans,L=ox?OXL:KANA;
+      return `<div class="gex ${ok?'ok':'ng'}"><b>（${it.k+1}）${ok?'✓':'✕'} 正答 ${L[it.ans]}${ox?'':' '+esc(S.opts[it.ans])}</b><p>${esc(it.ex)}</p></div>`;}).join('')}${figFor(S.title+' '+(S.stem||'')+' '+items.map(x=>x.ex).join(' '))}${refLine(items[0].cat)}${inDrill?reportBox(items[0]):''}</div>`:'';
+  return `<div class="qcard">${head}${body}${exs}</div>`;
+}
+function quizHTML(){
+  if(quiz.i>=quiz.list.length){
+    const n=quiz.list.length,c=quiz.correct,wrong=quiz.list.filter(x=>x.pick!==x.ans);
+    const sec=Math.round(((quiz.t1||(quiz.t1=Date.now()))-(quiz.t0||quiz.t1))/1000),st=streakInfo(),p=pct(c,n),good=p>=70;
+    const ns=nextStage(),due=dueIds().length;
+    // 次にやること：ステージの続き → 今日の復習 → もう一度
+    const nxt=quiz.stage&&ns&&ns.id!==quiz.stage?{a:`data-stage="${ns.id}"`,t:`次のステージへ：${ns.name}`}:due?{a:'data-act="review"',t:`今日の復習へ（${due}問）`}:null;
+    return `<div class="result ${good?'good':'bad'}">
+      <div class="rring">${ringPct(p)}</div>
+      <div class="rtitle">${good?(p===100?'全問正解！':'よくできました'):'あと少し'}</div>
+      <div class="rsub">${esc(quiz.label)}</div>
+      <div class="rstats">
+        <div><span>正解</span><b>${c}<small>／${n}</small></b></div>
+        <div><span>時間</span><b>${Math.floor(sec/60)}<small>分</small>${sec%60}<small>秒</small></b></div>
+        <div><span>今日</span><b>${st.today}<small>／${st.goal}問</small></b></div>
+        <div><span>連続</span><b>${st.cur}<small>日</small></b></div>
+      </div>
+      ${quiz.pathMsg?`<p class="pathmsg">${esc(quiz.pathMsg)}</p>`:''}${quiz.story?`<p class="story clear">${esc(quiz.story)}</p>`:''}
+    </div>
+    <div class="ractions">${nxt?`<button class="btn block" ${nxt.a}>${esc(nxt.t)}</button>`:''}<button class="btn ${nxt?'ghost':''} block" data-act="again">もう一度</button><button class="btn ghost block" data-v2="${quiz.stage||quiz.ctest!=null?'road':'home'}">${quiz.stage||quiz.ctest!=null?'ロードに戻る':'ホームへ'}</button></div>
+    ${wrong.length?`<h2>間違えた問題（${wrong.length}問）</h2><div class="wronglist">${wrong.map(x=>`<div class="panel"><span class="tag">${CATS[x.cat].name}</span><p>${esc(x.q)}</p><p><b>正答：</b>${esc(x.choices[x.ans])}</p><p class="note">${esc(x.ex)}</p>${refLine(x.cat)}</div>`).join('')}</div>`:''}
+`;
+  }
+  const it=quiz.list[quiz.i],rev=!!it.checked,ok=it.pick===it.ans;
+  const [gs,ge]=grpRange(quiz.list,quiz.i);
+  if(it.kind==='x'){
+    // 大問：まとめて解答し、まとめて採点する
+    if(quiz.act==null||quiz.act<gs||quiz.act>=ge)quiz.act=firstOpen(quiz.list,gs,ge);
+    const items=quiz.list.slice(gs,ge),allF=items.every(x=>x.pick!=null),nOk=items.filter(x=>x.pick===x.ans).length,full=nOk===items.length;
+    return `<div class="qtop"><button class="iconbtn" data-act="quitquiz" aria-label="やめる（進み具合はリセット）">${ICON.close}</button><div class="prog"><i style="width:${(rev?ge:gs)/quiz.list.length*100}%"></i></div><span class="cnt">${gs+1}${ge-gs>1?'–'+ge:''}/${quiz.list.length}</span><button class="iconbtn" data-act="calc" aria-label="電卓">${ICON.calc}</button><button class="iconbtn" data-act="sheet" aria-label="数値表">${ICON.table}</button></div>
+    ${groupCard(quiz.list,gs,ge,quiz.act,rev,true)}
+    <div class="actionbar ${rev?(full?'ok':'ng'):''}"><div class="in">
+    ${rev?`<div class="msg"><span class="mk" aria-hidden="true">${full?'✓':nOk?'△':'✕'}</span><span>${full?esc(it.praise||'全問正解！'):`${items.length}問中 ${nOk}問 正解`}</span></div><button class="btn" data-act="next">${ge<quiz.list.length?'続ける':'結果を見る'}</button>`
+         :`<button class="btn block" data-act="gcheck" ${allF?'':'disabled'}>${allF?'まとめて確認する':`確認する（${items.filter(x=>x.pick!=null).length}／${items.length}）`}</button>`}</div></div>`;
+  }
+  return `<div class="qtop"><button class="iconbtn" data-act="quitquiz" aria-label="やめる（進み具合はリセット）">${ICON.close}</button><div class="prog" role="progressbar" aria-valuenow="${quiz.i+(rev?1:0)}" aria-valuemax="${quiz.list.length}"><i style="width:${(quiz.i+(rev?1:0))/quiz.list.length*100}%"></i></div><span class="cnt">${quiz.i+1}/${quiz.list.length}</span><button class="iconbtn" data-act="calc" aria-label="電卓">${ICON.calc}</button><button class="iconbtn" data-act="sheet" aria-label="数値表">${ICON.table}</button></div>
+  ${qCard(it,quiz.i,quiz.list.length,rev)}
+  <div class="actionbar ${rev?(ok?'ok':'ng'):''}" role="${rev?'status':''}"><div class="in">
+  ${rev?`<div class="msg"><span class="mk" aria-hidden="true">${ok?'✓':'✕'}</span><span>${ok?esc(it.praise||'正解！'):'不正解'}${ok&&it.streak>=3?`<br><small style="font-weight:400">${it.streak}問連続正解</small>`:''}</span></div><button class="btn" data-act="next">${quiz.i+1<quiz.list.length?'続ける':'結果を見る'}</button>`
+       :`<button class="btn block" data-act="check" ${it.pick==null?'disabled':''}>確認する</button>`}</div></div>`;
+}
+
+// ===== 模擬試験 =====
+const MOCK={n:50,method:30,practice:20,min:90};
+function mockStartHTML(){
+  const hist=P.mocks.slice(-5).reverse();
+  return subtabs('practice')+`<h2>模擬試験</h2>
+  <div class="panel">
+    <p style="margin-top:0">本試験と同じ90分・マークシート形式で、手法${MOCK.method}問・実践${MOCK.practice}問を出題します。解答中は正誤を表示せず、終了後に合格基準で判定します。</p>
+    <ul style="margin:0 0 12px;padding-left:1.2em"><li>各分野 概ね50%以上</li><li>総合 概ね70%以上</li></ul>
+    <button class="btn" data-act="startmock">開始する（90:00）</button>
+  </div>
+  ${hist.length?`<h2>受験履歴</h2><div class="panel">${hist.map(h=>`<div class="catrow" style="grid-template-columns:minmax(0,1fr) auto"><span class="nm">${new Date(h.t).toLocaleString('ja-JP',{dateStyle:'short',timeStyle:'short'})}　<b style="color:var(--${h.pass?'ok':'ucl'})">${h.pass?'合格圏':'不合格圏'}</b></span><span class="pc">${h.tot}% / ${h.m}% / ${h.p}%</span></div>`).join('')}<p class="note">総合 / 手法 / 実践</p></div>`:''}`;
+}
+function startMock(){
+  const fld=(f,kind)=>ITEMS.filter(i=>i.kind===kind&&(kind==='x'?SETS[i.set].field:CATS[i.cat].field)===f);
+  // 各分野の約半分を本試験形式の大問（セット単位で順序を保つ）にし、残りを計算・知識問題で埋める
+  const mSet=fitSets(fld('手法','x'),Math.round(MOCK.method*.5));
+  const pSet=fitSets(fld('実践','x'),Math.round(MOCK.practice*.5));
+  const mRest=MOCK.method-mSet.length,ng=Math.round(mRest*.6),g=fld('手法','g');
+  const mList=[...shuffle(g).concat(shuffle(g)).slice(0,ng),...shuffle(fld('手法','k')).slice(0,mRest-ng)];
+  const pList=shuffle(fld('実践','k')).slice(0,MOCK.practice-pSet.length);
+  const list=[...mSet.map(id=>BYID[id]),...shuffle(mList),...pSet.map(id=>BYID[id]),...pList].map(instance);
+  mock={list,i:0,end:Date.now()+MOCK.min*60e3,done:false,confirm:false};
+  tick();render();saveSession();
+}
+let timerId=null;
+function tick(){clearInterval(timerId);timerId=setInterval(()=>{if(!mock||mock.done){clearInterval(timerId);return;}const el=$('#timer');const left=mock.end-Date.now();if(left<=0){finishMock();return;}if(el){el.textContent=fmtT(left);el.classList.toggle('low',left<10*60e3);}},1000);}
+const fmtT=ms=>{const s=Math.max(0,Math.floor(ms/1000));return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;};
+function mockHTML(){
+  if(mock.done)return mockResultHTML();
+  const it=mock.list[mock.i],answered=mock.list.filter(x=>x.pick!=null).length;
+  const [gs,ge]=grpRange(mock.list,mock.i);
+  if(it.kind==='x'&&(mock.act==null||mock.act<gs||mock.act>=ge))mock.act=firstOpen(mock.list,gs,ge);
+  return `<div class="mockhead"><span class="timer-lbl" style="font-weight:700">問 ${gs+1}${ge-gs>1?'–'+ge:''}<span class="note" style="margin:0"> / ${mock.list.length}・解答済み ${answered}</span></span><span class="timer" id="timer" aria-label="残り時間">${fmtT(mock.end-Date.now())}</span><button class="iconbtn" data-act="calc" aria-label="電卓">${ICON.calc}</button><button class="iconbtn" data-act="sheet" aria-label="数値表">${ICON.table}</button></div>
+  <div class="qtop" style="margin:0 0 8px"><div class="prog"><i style="width:${answered/mock.list.length*100}%"></i></div></div>
+  ${it.kind==='x'?groupCard(mock.list,gs,ge,mock.act,false,false):qCard(it,mock.i,mock.list.length,false)}
+  <div class="actionbar"><div class="in row"><button class="btn ghost" data-act="mprev" ${gs?'':'disabled'}>前へ</button><button class="btn block" data-act="mnext">${ge<mock.list.length?'次へ':'見直しへ'}</button></div></div>
+  <div class="panel" style="margin-top:12px"><div class="lbl">問題一覧</div><div class="qgrid">${mock.list.map((x,j)=>`<button data-jump="${j}" class="${x.pick!=null?'done':''} ${j>=gs&&j<ge?'cur':''}" aria-label="問${j+1}">${j+1}</button>`).join('')}</div>
+  ${mock.confirm?`<div class="confirm">未解答が ${mock.list.length-answered} 問あります。採点しますか？<div class="actions" style="margin-top:8px"><button class="btn danger" data-act="mfinish">採点する</button><button class="btn ghost" data-act="mcancel">戻る</button></div></div>`:`<div class="actions" style="margin-top:12px"><button class="btn danger" data-act="mfinishask">終了して採点</button></div>`}</div>`;
+}
+function finishMock(){
+  if(!mock||mock.done)return;mock.done=true;clearInterval(timerId);try{localStorage.removeItem('qc2-session');}catch(e){}
+  const f={'手法':{c:0,n:0},'実践':{c:0,n:0}};
+  mock.list.forEach(x=>{const ok=x.pick===x.ans;f[CATS[x.cat].field].n++;if(ok)f[CATS[x.cat].field].c++;record(x.id,ok);});
+  const tot=pct(f['手法'].c+f['実践'].c,mock.list.length),m=pct(f['手法'].c,f['手法'].n),p=pct(f['実践'].c,f['実践'].n);
+  mock.res={tot,m,p,pass:tot>=70&&m>=50&&p>=50,used:Math.round((Date.now()-(mock.end-MOCK.min*60e3))/60e3)};
+  P.mocks.push({t:Date.now(),tot,m,p,pass:mock.res.pass});P.mocks=P.mocks.slice(-20);
+  {const fin=PATH[PATH.length-1];if(mock.res.pass&&finalReady(fin)){P.chap=P.chap||{};P.chap[fin.id]=true;}}
+  P.sessions.push({t:Date.now(),n:mock.list.length,c:f['手法'].c+f['実践'].c});P.sessions=P.sessions.slice(-30);
+  sfx(mock.res.pass?'fanfare':'end');if(mock.res.pass)setTimeout(confetti,300);persist();render();
+}
+function mockResultHTML(){
+  const r=mock.res,box=(l,v,th)=>`<div><div class="lbl">${l}</div><div class="v ${v>=th?'ok':'ng'}">${v}%</div><div class="note" style="margin:0">基準 ${th}%</div></div>`;
+  const filter=mock.filter||'wrong';
+  const rows=mock.list.map((x,j)=>({x,j})).filter(o=>filter==='all'||o.x.pick!==o.x.ans);
+  return `<h2>模擬試験の結果</h2>
+  <div class="panel"><div class="verdict ${r.pass?'pass':'fail'}">${r.pass?'合格圏':'不合格圏'}</div>
+  <div class="crit">${box('総合',r.tot,70)}${box('手法',r.m,50)}${box('実践',r.p,50)}</div>
+  <p class="note">所要時間 約${Math.min(r.used,MOCK.min)}分。</p>
+  <div class="qgrid">${mock.list.map((x,j)=>`<button class="${x.pick===x.ans?'r':'w'}" data-mview="${j}">${j+1}</button>`).join('')}</div></div>
+  <h2>解説</h2>
+  <div class="seg"><button data-mf="wrong" aria-pressed="${filter==='wrong'}">間違えた問題</button><button data-mf="all" aria-pressed="${filter==='all'}">すべて</button></div>
+  <div class="wronglist">${rows.map(({x,j})=>`<div class="panel" id="mq${j}"><div class="qhead"><span class="qno">問${j+1}</span><span class="tag">${CATS[x.cat].name}</span><span class="tag ${x.pick===x.ans?'':'calc'}">${x.pick===x.ans?'正解':x.pick==null?'未解答':'不正解'}</span></div><p>${esc(x.q)}</p><p><b>正答：</b>${labOf(x)[x.ans]} ${esc(x.choices[x.ans])}${x.pick!=null&&x.pick!==x.ans?`<br><b>あなたの解答：</b>${labOf(x)[x.pick]} ${esc(x.choices[x.pick])}`:''}</p><p class="note">${esc(x.ex)}</p>${refLine(x.cat)}</div>`).join('')||'<p class="empty">間違えた問題はありません。</p>'}</div>
+  <div class="actions" style="margin-top:16px"><button class="btn" data-act="mockexit">模擬試験トップへ</button></div>`;
+}
+
+// ===== 誤りの報告 =====
+// 問題や解説の誤りに気づいたらメモを残す。成績タブで一覧・コピーできる（作成者への送信機能はない）
+function reportBox(it){
+  const done=(P.reports||[]).some(r=>r.id===it.id&&r.q===it.q);
+  if(quiz&&quiz.reportFor===quiz.i)return `<div class="report"><label class="lbl" for="rpNote">どこが誤りだと思うか</label><textarea id="rpNote" rows="3" placeholder="例：解説の計算で 0.632 は 0.6325 の丸めでは？"></textarea><div class="actions"><button class="btn sm" data-act="rpsave">保存</button><button class="btn ghost sm" data-act="rpcancel">やめる</button></div></div>`;
+  return `<div class="actions" style="margin-top:10px"><button class="btn ghost sm" data-act="rpopen">${done?'報告済み（追加で報告）':'誤りを報告'}</button></div>`;
+}
+function reportsHTML(){
+  const R=P.reports||[];
+  if(!R.length)return '<p class="note" style="margin:0">演習の解説欄にある「誤りを報告」で記録したメモが、ここに一覧で表示されます。</p>';
+  return R.map((r,i)=>`<div class="rprow"><div class="note" style="margin:0">${new Date(r.t).toLocaleDateString('ja-JP')}｜${esc(r.cat?CATS[r.cat].name:'')}｜ID ${esc(r.id)}</div><p>${esc(r.q.slice(0,120))}${r.q.length>120?'…':''}</p><p><b>正答：</b>${esc(r.a)}</p><p><b>メモ：</b>${esc(r.note||'（なし）')}</p><button class="btn ghost sm" data-rpdel="${i}">削除</button></div>`).join('')
+   +`<div class="actions" style="margin-top:10px"><button class="btn sm" data-act="rpcopy">一覧をテキストでコピー</button></div>`;
+}
+const reportsText=()=>(P.reports||[]).map(r=>`[${r.id}] ${r.q}\n正答：${r.a}\nメモ：${r.note||''}`).join('\n\n');
+async function copyText(txt,el){
+  try{await navigator.clipboard.writeText(txt);toast('コピーしました');return;}catch(e){}
+  // クリップボードAPIが使えない環境（WebView 等）では、テキスト欄を選択状態にして手動コピーしてもらう
+  if(el){el.value=txt;el.hidden=false;el.focus();el.select();toast('選択した状態です。長押しでコピーしてください');}
+}
+function toast(m){const t=$('#toast');if(!t)return;t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>{t.hidden=true;},2200);}
+
+// ===== 成績 =====
+function statsHTML(){
+  const acc=catAcc();
+  const rows=f=>Object.entries(CATS).filter(([k,c])=>c.field===f).map(([k,c])=>{const a=acc[k],p=pct(a.c,a.n);return `<div class="catrow"><span class="nm">${c.name} <span class="n">${a.n}回</span></span><span class="pc">${p==null?'—':p+'%'}</span><div class="meter"><i class="${p!=null&&p<70?'low':''}" style="width:${p||0}%"></i></div></div>`;}).join('');
+  const sr=srsSummary(),all=Object.values(P.stats).reduce((a,s)=>({c:a.c+s.c,n:a.n+s.c+s.w}),{c:0,n:0}),f=fieldAcc(),last=P.mocks[P.mocks.length-1];
+  const kp=(lab,x)=>{const p=pct(x.c,x.n);return `<div class="panel kpi"><div class="lbl">${lab}</div><div class="v" style="color:${p==null?'var(--muted)':p>=(lab==='総合'?70:50)?'var(--ok)':'var(--ucl)'}">${p==null?'—':p}<small>${p==null?'':'%'}</small></div></div>`;};
+  return `<h2>現在の正答率</h2>
+  <div class="kpis">${kp('総合',all)}${kp('手法',f['手法'])}${kp('実践',f['実践'])}</div>
+  <p class="note" style="margin-inline:4px">合格基準：手法・実践の各分野が概ね50%以上、かつ総合が概ね70%以上（日本規格協会の公表基準）。解答数 ${all.n} 問。</p>
+  ${last?`<h2>直近の模擬試験</h2><div class="panel"><div class="lbl">${new Date(last.t).toLocaleDateString('ja-JP')}</div><div style="display:flex;gap:16px;align-items:baseline;flex-wrap:wrap"><span class="verdict ${last.pass?'pass':'fail'}" style="font-size:1.4rem">${last.pass?'合格圏':'不合格圏'}</span><span class="timer">総合 ${last.tot}%／手法 ${last.m}%／実践 ${last.p}%</span></div></div>`:''}
+  <h2>復習の予定</h2>
+  <div class="kpis"><div class="panel kpi"><div class="lbl">今日の復習</div><div class="v" style="color:${sr.due?'var(--ucl)':'var(--ok)'}">${sr.due}<small>問</small></div></div><div class="panel kpi"><div class="lbl">明日</div><div class="v">${sr.tom}<small>問</small></div></div><div class="panel kpi"><div class="lbl">定着</div><div class="v" style="color:var(--ok)">${sr.firm}<small>問</small></div></div></div>
+  <p class="note" style="margin-inline:4px">正解するたびに次の出題までの間隔が延びます（1日→3日→7日→…）。間違えると今日の復習に戻ります。間隔が21日以上になった問題を「定着」として数えています（学習中 ${sr.learn} 問）。</p>
+  <h2>正答率の推移</h2><div class="panel chart">${trendSVG()}<p class="note">演習1回ごとの正答率を p 管理図の形で表示。中心線は全体の平均正答率、破線は ±3σ の管理限界（回ごとの問題数で変わる）。</p></div>
+  <h2>分野別の正答率</h2>
+  <div class="grid2"><div class="panel"><div class="lbl">品質管理の手法</div>${rows('手法')}</div><div class="panel"><div class="lbl">品質管理の実践</div>${rows('実践')}</div></div>
+  <p class="note">破線は70%。赤は70%未満の分野。</p>
+  <h2>記録の管理</h2>
+  <div class="panel">${store.resetAsk?`<div class="confirm" style="margin-top:0">すべての解答記録と模擬試験の履歴を消去します。元に戻せません。<div class="actions" style="margin-top:8px"><button class="btn danger" data-act="resetdo">消去する</button><button class="btn ghost" data-act="resetno">やめる</button></div></div>`:`<button class="btn danger" data-act="resetask">記録をリセット</button>`}</div>
+  <h2>記録の書き出し・読み込み</h2>
+  <div class="panel">
+    <p class="note" style="margin-top:0">解答記録をテキスト（JSON）で書き出し、別の端末やアプリ版・Web版の間で移せます。読み込むと、いまの記録は読み込んだ内容で置き換わります。</p>
+    <div class="actions"><button class="btn ghost sm" data-act="exp">書き出す</button><button class="btn ghost sm" data-act="impopen">読み込む</button></div>
+    ${store.io==='exp'?`<textarea id="ioText" rows="5" readonly>${esc(JSON.stringify(P))}</textarea><div class="actions"><button class="btn sm" data-act="expcopy">コピー</button><button class="btn ghost sm" data-act="ioclose">閉じる</button></div>`:''}
+    ${store.io==='imp'?`<textarea id="ioText" rows="5" placeholder="書き出したテキストを貼り付け"></textarea>${store.ioErr?`<p class="note" style="color:var(--ucl)">${esc(store.ioErr)}</p>`:''}<div class="actions"><button class="btn danger sm" data-act="impdo">置き換えて読み込む</button><button class="btn ghost sm" data-act="ioclose">やめる</button></div>`:''}
+  </div>
+  <h2>報告した誤り（${(P.reports||[]).length}件）</h2>
+  <div class="panel">${reportsHTML()}<textarea id="rpCopy" rows="4" hidden readonly></textarea></div>`;
+}
+function trendSVG(){
+  const s=P.sessions;if(s.length<2)return '<p class="empty">演習を2回以上行うと、正答率の推移が表示されます。</p>';
+  const W=360,H=190,L=34,R=8,Tp=10,B=22,pb=s.reduce((a,x)=>a+x.c,0)/s.reduce((a,x)=>a+x.n,0);
+  const x=i=>L+(W-L-R)*(s.length===1?0.5:i/(s.length-1)),y=v=>Tp+(H-Tp-B)*(1-v);
+  const lim=s.map(o=>{const d=3*Math.sqrt(pb*(1-pb)/o.n);return[Math.min(1,pb+d),Math.max(0,pb-d)];});
+  const step=(k)=>lim.map((l,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(l[k]).toFixed(1)}`).join('');
+  const pts=s.map((o,i)=>[x(i),y(o.c/o.n),o.c/o.n<lim[i][1]]);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="正答率の推移">
+  ${[0,.5,.7,1].map(v=>`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y(v)+3}" text-anchor="end">${v*100}%</text>`).join('')}
+  <path d="${step(0)}" fill="none" stroke="var(--ucl)" stroke-dasharray="4 3" stroke-width="1.2"/>
+  <path d="${step(1)}" fill="none" stroke="var(--ucl)" stroke-dasharray="4 3" stroke-width="1.2"/>
+  <line x1="${L}" x2="${W-R}" y1="${y(pb)}" y2="${y(pb)}" stroke="var(--accent)" stroke-width="1.2"/>
+  <text x="${W-R}" y="${y(pb)-4}" text-anchor="end" style="fill:var(--accent)">CL ${Math.round(pb*100)}%</text>
+  <polyline points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+  ${pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="${p[2]?'var(--ucl)':'var(--card)'}" stroke="${p[2]?'var(--ucl)':'var(--ink)'}" stroke-width="1.5"/>`).join('')}
+  <text x="${L}" y="${H-6}">古い</text><text x="${W-R}" y="${H-6}" text-anchor="end">最新（${s.length}回）</text></svg>`;
+}
+
+// ===== 数値表 =====
+function tablesHTML(where){
+  const tabs=[['norm','正規分布'],['t','t 分布'],['chi2','χ² 分布'],['F05','F（5%）'],['F025','F（2.5%）'],['cc','管理図係数'],['sign','符号検定']];
+  let body='';
+  if(tableTab==='norm'){body=`<table class="nt"><thead><tr><th>K</th>${[...Array(10)].map((_,c)=>`<th>.0${c}</th>`).join('')}</tr></thead><tbody>${T.norm.map((r,i)=>`<tr><th>${(i/10).toFixed(1)}</th>${r.map(v=>`<td>${v.toFixed(4)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    body+='<p class="note">上側確率 P＝Pr(u≧K)。行がKの小数第1位まで、列が小数第2位。例：K＝1.96 → 0.0250。</p>';}
+  if(tableTab==='t'){body=`<table class="nt"><thead><tr><th>φ ＼ P</th>${T.t.P.map(p=>`<th>${p}</th>`).join('')}</tr></thead><tbody>${T.t.df.map((d,i)=>`<tr><th>${d==='inf'?'∞':d}</th>${T.t.v[i].map(v=>`<td>${v.toFixed(3)}</td>`).join('')}</tr>`).join('')}</tbody></table><p class="note">両側確率 P に対する t(φ, P)。片側 α の値は P＝2α の列を読む。</p>`;}
+  if(tableTab==='chi2'){body=`<table class="nt"><thead><tr><th>φ ＼ P</th>${T.chi2.P.map(p=>`<th>${p}</th>`).join('')}</tr></thead><tbody>${T.chi2.df.map((d,i)=>`<tr><th>${d}</th>${T.chi2.v[i].map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table><p class="note">上側確率 P に対する χ²(φ, P)。</p>`;}
+  if(tableTab==='F05'||tableTab==='F025'){const a=tableTab==='F05'?'0.05':'0.025';body=`<table class="nt"><thead><tr><th>φ2 ＼ φ1</th>${T.F.f1.map(f=>`<th>${f}</th>`).join('')}</tr></thead><tbody>${T.F.f2.map((f,i)=>`<tr><th>${f}</th>${T.F[a][i].map(v=>`<td>${v.toFixed(2)}</td>`).join('')}</tr>`).join('')}</tbody></table><p class="note">上側確率 ${a} の F(φ1, φ2)。φ1：分子の自由度、φ2：分母の自由度。</p>`;}
+  if(tableTab==='cc'){body=`<table class="nt"><thead><tr><th>n</th><th>A2</th><th>D3</th><th>D4</th><th>d2</th><th>A3</th><th>B3</th><th>B4</th></tr></thead><tbody>${Object.entries(CC).map(([n,c])=>`<tr><th>${n}</th><td>${c.A2.toFixed(3)}</td><td>${c.D3==null?'—':c.D3.toFixed(3)}</td><td>${c.D4.toFixed(3)}</td><td>${c.d2.toFixed(3)}</td><td>${CS[n].A3.toFixed(3)}</td><td>${CS[n].B3==null?'—':CS[n].B3.toFixed(3)}</td><td>${CS[n].B4.toFixed(3)}</td></tr>`).join('')}</tbody></table><p class="note">X̄−R：X̿ ± A2R̄、UCL＝D4R̄、LCL＝D3R̄（n≦6は示さない）、σ̂＝R̄／d2。X̄−s：X̿ ± A3 s̄、UCL＝B4 s̄、LCL＝B3 s̄（n≦5は示さない）。</p>`;}
+  if(tableTab==='sign'){const rows=[];for(let i=0;i<T.sign.n.length;i+=2){const a=[i,i+1].filter(j=>j<T.sign.n.length);rows.push(`<tr>${a.map(j=>`<th>${T.sign.n[j]}</th><td>${T.sign.v05[j]}</td><td>${T.sign.v01[j]}</td>`).join('')}</tr>`);}
+    body=`<table class="nt"><thead><tr><th>N</th><th>5%</th><th>1%</th><th>N</th><th>5%</th><th>1%</th></tr></thead><tbody>${rows.join('')}</tbody></table><p class="note">符号検定表（両側）。少ないほうの個数がこの値以下なら有意。系列相関（大波・小波）の判定に使う。二項分布 B(N, 0.5) から算出。</p>`;}
+  return `<div class="seg" style="flex-wrap:wrap;margin-bottom:10px">${tabs.map(([k,l])=>`<button data-tt="${k}" data-where="${where}" aria-pressed="${tableTab===k}">${l}</button>`).join('')}</div><div class="tblwrap">${body}</div>`;
+}
+// ===== 資料 =====
+const A=(t,u)=>`<a href="${u}" target="_blank" rel="noopener">${esc(t)}</a>`;
+// 解説の下に出す「関連規格」の1行。タップで資料タブの該当分野へ移動する
+function refLine(cat){
+  const r=REFS[cat]||[];
+  return `<div class="ref"><span class="lbl">関連資料</span>${r.length?r.map(x=>esc(x[0])).join('、')+' ほか':'レベル表・4級用テキスト'}<button class="linkbtn" data-res="${cat}">資料を見る</button></div>`;
+}
+function resHTML(){
+  const n={k:KB.length,g:Object.keys(G).length,x:ITEMS.filter(i=>i.kind==='x').length,s:DAI.length};
+  const sec=RES_LINKS.map(g=>`<h2>${esc(g.h)}</h2>${g.note?`<p class="note" style="margin-top:0">${esc(g.note)}</p>`:''}<div class="panel links">${g.items.map(([t,u,d])=>`<div class="lnk">${A(t,u)}${d?`<span>${esc(d)}</span>`:''}</div>`).join('')}</div>`).join('');
+  const refs=Object.entries(CATS).map(([k,c])=>`<div class="refrow" id="res-${k}"><div class="nm"><span class="lbl">${c.field}</span>${esc(c.name)}</div><div>${(REFS[k]||[]).length?REFS[k].map(([no,t])=>`<div><b class="jis">${esc(no)}</b> ${esc(t)}</div>`).join(''):'<div class="note" style="margin:0">対応する JIS はありません。レベル表と4級用テキストを参照してください。</div>'}</div></div>`).join('');
+  return `<h2>出題範囲（2級レベル表）との対応</h2>
+  <p class="note" style="margin-top:0">日本規格協会「品質管理検定レベル表」（${SYL_VER}）の2級欄の全項目と、収録問題数・あなたの正答率です。【】は出題レベルの程度です。「演習」でその項目だけを出題します。2級の試験範囲には3級・4級の範囲も含まれるため、「3級：」「4級：」の見出しで、3級欄・4級欄のうち2級欄と重複しない項目も載せています。</p>
+  <div class="panel syl">${sylHTML()}</div>
+  ${sec}
+  <h2>分野ごとの関連規格</h2>
+  <div class="panel">${refs}</div>
+  <p class="note">規格の番号と名称は作成者の知識に基づきます。改正されている場合があるので、JIS 検索で最新版を確認してください。</p>
+  <h2>このアプリについて</h2>
+  <div class="panel about">
+    <div class="ver-big">v${APP.version}<small>${APP.date} 更新</small></div>
+    <p>知識問題 ${n.k} 問、計算問題 ${n.g} 種（毎回数値が変わる）、本試験形式 ${n.s} 題（${n.x} 問）。</p>
+    <p class="note">個人が作成した非公式の学習教材です。日本規格協会・日本科学技術連盟とは関係ありません。「QC検定」は日本規格協会の登録商標です。問題と解説はすべてオリジナルで、過去の試験問題は使用していません。</p>
+    <p class="note">更新履歴は右上の「設定」で確認できます。</p>
+  </div>`;
+}
+// レベル表の大項目ごとに折りたたみ、項目ごとに問題数・正答率・演習ボタンを出す
+function sylHTML(){
+  const groups=[];SYLX.forEach(s=>{const k=s.f+'｜'+s.h;let g=groups.find(x=>x.k===k);if(!g)groups.push(g={k,f:s.f,h:s.h,tag:s.gtag,lv3:s.lv3,rows:[]});g.rows.push(s);});
+  return groups.map(g=>{
+    const rows=g.rows.map(s=>{let c=0,n=0;s.ids.forEach(id=>{const t=P.stats[id];if(t){c+=t.c;n+=t.c+t.w;}});const p=pct(c,n);
+      return `<div class="sylrow"><div class="nm">${esc(s.name)}${s.tag?`<span class="lv">【${esc(s.tag)}】</span>`:''}</div><div class="num">${s.ids.length}問</div><div class="num ${p!=null&&p<70?'low':''}">${p==null?'—':p+'%'}</div><button class="btn ghost sm" data-syl="${s.key}" ${s.ids.length?'':'disabled'}>演習</button></div>`;}).join('');
+    const tot=new Set(g.rows.flatMap(s=>s.ids)).size;
+    return `<details${g.lv3?' class="lv3"':''}><summary><span class="lbl">${g.f}</span> ${esc(g.h)}${g.tag?`<span class="lv">【${esc(g.tag)}】</span>`:''}<span class="cnt">${tot}問</span></summary>${rows}</details>`;}).join('');
+}
+// 演習・模試の状態は保ったまま資料タブへ移り、該当分野の行を強調する（タブで戻れば続きから）
+function openRes(cat){
+  setView('res');
+  const el=document.getElementById('res-'+cat);
+  if(el){el.scrollIntoView({block:'center'});el.classList.add('hit');setTimeout(()=>el.classList.remove('hit'),1600);}
+}
+function openSheet(){$('#sheetBody').innerHTML=tablesHTML('sheet');showSheet('#sheet');}
+$('#sheetClose').addEventListener('click',closeSheets);
+// 汎用シート内のボタン（ステージ開始・章末テスト・閉じる）
+$('#gsheet').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+  if(d.close!=null){closeSheets();return;}
+  if(d.quitok!=null){quitQuiz();return;}
+  if(d.stage){closeSheets();startStage(d.stage);return;}
+  if(d.ctest!=null){closeSheets();startChapTest(+d.ctest);return;}
+  if(d.v2){closeSheets();setView(d.v2);}});
+$('#sheet').addEventListener('click',e=>{const b=e.target.closest('[data-tt]');if(b){tableTab=b.dataset.tt;$('#sheetBody').innerHTML=tablesHTML('sheet');}});
+
+// ===== 操作 =====
+$('#main').addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;const d=t.dataset;
+  if(d.tt){tableTab=d.tt;render();return;}
+  if(d.res){openRes(d.res);return;}
+  if(d.node){sfx('tap');stageSheet(d.node);return;}
+  if(d.tnode!=null){sfx('tap');testSheet(+d.tnode);return;}
+  if(d.stage){startStage(d.stage);return;}
+  if(d.ctest!=null){startChapTest(+d.ctest);return;}
+  if(d.v2){setView(d.v2);return;}
+  if(d.syl){const s=SYLX.find(x=>x.key===d.syl);if(s){quiz=null;lastSyl=s;startQuiz(buildList(s.ids.map(id=>BYID[id]),10,true),'範囲：'+s.name);}return;}
+  if(d.cat){drill.cats.has(d.cat)?drill.cats.delete(d.cat):drill.cats.add(d.cat);render();return;}
+  if(d.set){drill[d.set]=d.set==='count'?+d.val:d.val;render();return;}
+  if(d.pick!=null){
+    // 選ぶだけでは確定しない（Duolingo方式）。確認するで判定する
+    if(view==='drill'&&quiz){const it=quiz.list[quiz.i];if(it.checked)return;it.pick=+d.pick;sfx('tap');render();return;}
+    if(view==='mock'&&mock&&!mock.done){mock.list[mock.i].pick=+d.pick;sfx('tap');render();return;}
+  }
+  if(d.jump!=null){const j=+d.jump;mock.i=grpRange(mock.list,j)[0];mock.act=j;mock.confirm=false;render();return;}
+  // 大問：空欄を選ぶ／選択肢で埋める／○×を選ぶ
+  {const L=view==='drill'&&quiz?quiz:view==='mock'&&mock&&!mock.done?mock:null;
+   if(L&&(d.blank!=null||d.gpick!=null||d.ox!=null)){
+    const list=L.list,[gs,ge]=grpRange(list,L.i);if(list[gs].checked)return;
+    if(d.blank!=null){L.act=+d.blank;sfx('tap');render();return;}
+    if(d.ox!=null){list[+d.ox].pick=+d.val;sfx('tap');render();return;}
+    if(d.gpick!=null){const cur=list[L.act];cur.pick=+d.gpick;sfx('tap');
+      // 次の未入力の空欄へ自動で進む
+      let nx=null;for(let k=1;k<=ge-gs;k++){const j=gs+((L.act-gs+k)%(ge-gs));if(list[j].pick==null){nx=j;break;}}
+      if(nx!=null)L.act=nx;render();
+      const el=document.querySelector('.blank2.act');if(el&&nx!=null)el.scrollIntoView({block:'center',behavior:'smooth'});return;}
+   }}
+  if(d.mview!=null){mock.filter='all';render();const el=document.getElementById('mq'+d.mview);if(el)el.scrollIntoView({block:'start'});return;}
+  if(d.mf){mock.filter=d.mf;render();return;}
+  if(d.rpdel!=null){P.reports.splice(+d.rpdel,1);persist();render();return;}
+  switch(d.act){
+    case 'quick':startQuiz(mixReview(buildList(ITEMS.filter(i=>i.kind!=='x'),10,false),3),'全分野10問');break;
+    case 'review':startReview();break;
+    case 'dai':startQuiz(buildSets(ITEMS.filter(i=>i.kind==='x'),10,false),'本試験形式');break;
+    case 'weak':{const w=weakIds().map(id=>BYID[id]);startQuiz(buildList(w,Math.min(10,w.length),false),'苦手の復習');break;}
+    case 'gomock':setView('mock');break;
+    case 'openset':openSettings();break;
+    case 'resume':resumeSession();break;
+    case 'dropsession':dropSession();break;
+    case 'allcats':Object.keys(CATS).forEach(k=>drill.cats.add(k));render();break;
+    case 'nocats':drill.cats.clear();render();break;
+    case 'startdrill':startQuiz(buildList(poolFor(),drill.count,true),'分野別演習');break;
+    case 'check':{const it=quiz.list[quiz.i];if(it.pick==null||it.checked)break;it.checked=true;const ok=it.pick===it.ans;
+      if(ok){quiz.correct++;quiz.streak=(quiz.streak||0)+1;}else quiz.streak=0;it.streak=quiz.streak;it.praise=pickPraise();const before=streakInfo().done;record(it.id,ok);
+      if(!before&&streakInfo().done)celebrateGoal();
+      if(quiz.i===quiz.list.length-1){P.sessions.push({t:Date.now(),n:quiz.list.length,c:quiz.correct});P.sessions=P.sessions.slice(-30);}
+      sfx(ok?(it.streak>=3&&it.streak%3===0?'combo':'right'):'wrong');persist();render();
+      const fb=document.querySelector('.fb');if(fb)fb.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});break;}
+    case 'gcheck':{const [gs,ge]=grpRange(quiz.list,quiz.i),items=quiz.list.slice(gs,ge);if(items.some(x=>x.pick==null)||items[0].checked)break;
+      const wasDone=streakInfo().done;let ok=0;items.forEach(x=>{x.checked=true;const r=x.pick===x.ans;if(r){ok++;quiz.correct++;quiz.streak=(quiz.streak||0)+1;}else quiz.streak=0;record(x.id,r);});
+      items[0].praise=pickPraise();
+      if(ge===quiz.list.length){P.sessions.push({t:Date.now(),n:quiz.list.length,c:quiz.correct});P.sessions=P.sessions.slice(-30);}
+      sfx(ok===items.length?'combo':ok?'partial':'wrong');persist();render();if(!wasDone&&streakInfo().done)celebrateGoal();
+      const fb=document.querySelector('.fb');if(fb)fb.scrollIntoView({block:'nearest',behavior:'smooth'});break;}
+    case 'next':quiz.reportFor=null;quiz.act=null;quiz.i=grpRange(quiz.list,quiz.i)[1];if(quiz.i>=quiz.list.length&&(quiz.stage||quiz.ctest!=null)){finishPath();persist();}if(quiz.i>=quiz.list.length){const okk=quiz.correct/quiz.list.length>=.7;sfx(okk?'fanfare':'end');if(okk)setTimeout(confetti,300);}render();window.scrollTo(0,0);break;
+    case 'again':{const lab=quiz.label,sg=quiz.stage,ct=quiz.ctest;quiz=null;if(sg){startStage(sg);break;}if(ct!=null){startChapTest(ct);break;}if(lab==='分野別演習')startQuiz(buildList(poolFor(),drill.count,true),lab);else if(lab==='今日の復習'){if(dueIds().length)startReview();else render();}else if(lab==='苦手の復習'){const w=weakIds().map(id=>BYID[id]);if(w.length)startQuiz(buildList(w,Math.min(10,w.length),false),lab);else render();}else if(lab.startsWith('範囲：')&&lastSyl)startQuiz(buildList(lastSyl.ids.map(id=>BYID[id]),10,true),lab);else if(lab==='本試験形式')startQuiz(buildSets(ITEMS.filter(i=>i.kind==='x'),10,false),lab);else startQuiz(buildList(ITEMS.filter(i=>i.kind!=='x'),10,false),lab);break;}
+    case 'quitquiz':if(quizActive())askQuit();else{quiz=null;render();}break;
+    case 'sheet':openSheetFor();break;
+    case 'calc':openCalc();break;
+    case 'startmock':startMock();break;
+    case 'mprev':mock.i=grpRange(mock.list,Math.max(0,grpRange(mock.list,mock.i)[0]-1))[0];mock.act=null;mock.confirm=false;render();window.scrollTo(0,0);break;
+    case 'mnext':{const ge=grpRange(mock.list,mock.i)[1];if(ge<mock.list.length){mock.i=ge;mock.act=null;render();window.scrollTo(0,0);}else{mock.confirm=mock.list.some(x=>x.pick==null);if(!mock.confirm)finishMock();else render();}break;}
+    case 'mfinishask':if(mock.list.some(x=>x.pick==null)){mock.confirm=true;render();}else finishMock();break;
+    case 'mfinish':finishMock();break;
+    case 'mcancel':mock.confirm=false;render();break;
+    case 'mockexit':mock=null;render();break;
+    case 'rpopen':quiz.reportFor=quiz.i;render();{const n=$('#rpNote');if(n)n.focus();}break;
+    case 'rpcancel':quiz.reportFor=null;render();break;
+    case 'rpsave':{const it=quiz.list[quiz.i];const note=($('#rpNote')||{}).value||'';
+      (P.reports=P.reports||[]).push({id:it.id,cat:it.cat,t:Date.now(),q:it.q,a:String(it.choices[it.ans]),note:note.slice(0,500)});
+      P.reports=P.reports.slice(-100);quiz.reportFor=null;persist();toast('報告を保存しました（成績タブで確認できます）');render();break;}
+    case 'rpcopy':copyText(reportsText(),$('#rpCopy'));break;
+    case 'exp':store.io='exp';render();break;
+    case 'expcopy':copyText(JSON.stringify(P),$('#ioText'));break;
+    case 'impopen':store.io='imp';store.ioErr='';render();break;
+    case 'ioclose':store.io=null;store.ioErr='';render();break;
+    case 'impdo':{try{const d=JSON.parse(($('#ioText')||{}).value||'');
+        if(!d||typeof d.stats!=='object'||!Array.isArray(d.sessions))throw new Error();
+        P=Object.assign(EMPTY(),{stats:d.stats,sessions:d.sessions.slice(-30),mocks:Array.isArray(d.mocks)?d.mocks:[],reports:Array.isArray(d.reports)?d.reports:[],daily:d.daily&&typeof d.daily==='object'?d.daily:{},goal:+d.goal||10,path:d.path||{},chap:d.chap||{}});
+        store.io=null;store.ioErr='';persist();toast('読み込みました（'+Object.keys(P.stats).length+'問分の記録）');render();}
+      catch(e){store.ioErr='読み込めませんでした。書き出したテキストをそのまま貼り付けてください。';render();}break;}
+    case 'resetask':store.resetAsk=true;render();break;
+    case 'resetno':store.resetAsk=false;render();break;
+    case 'resetdo':P=Object.assign(EMPTY(),{reports:P.reports||[],goal:P.goal||10});store.resetAsk=false;persist();render();break;
+  }
+});
+// ===== 効果音（Web Audioで合成。音声ファイルは使わない） =====
+let AC=null,soundOn=true;
+try{soundOn=localStorage.getItem('qc2-sound')!=='off';}catch(e){}
+let vibeOn=true;try{vibeOn=localStorage.getItem('qc2-vibe')!=='off';}catch(e){}
+// 出力系統：コンプレッサー → スピーカー。残響（短いホール）を少しだけ混ぜて、明るく広がる音にする
+let OUT=null,REV=null;
+function ac(){
+  // 閉じられた・壊れた出力は作り直す（アプリの切り替えなどで止まることがある）
+  if(AC&&(AC.state==='closed'||AC.state==='interrupted')){try{AC.close();}catch(e){}AC=null;}
+  if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;AC=new C({latencyHint:'interactive'});
+    const comp=AC.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=3;comp.connect(AC.destination);
+    OUT=AC.createGain();OUT.gain.value=0.9;OUT.connect(comp);
+    // 残響：減衰するノイズでインパルス応答を合成
+    const len=Math.floor(AC.sampleRate*1.1),buf=AC.createBuffer(2,len,AC.sampleRate);
+    for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.2);}
+    const cv=AC.createConvolver();cv.buffer=buf;REV=AC.createGain();REV.gain.value=0.22;REV.connect(cv);cv.connect(comp);}
+  if(AC.state==='suspended')AC.resume();return AC;
+}
+// エンベロープ付きの1音。wet は残響に送る量
+function osc(f,at,dur,{type='sine',vol=0.2,a=0.006,slide=0,wet=0.5,lp=0,detune=0}={}){
+  const c=ac();if(!c)return;const t=c.currentTime+at;
+  const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);o.detune.value=detune;
+  if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+dur*0.9);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+a);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  let node=o.connect(g);
+  if(lp){const fl=c.createBiquadFilter();fl.type='lowpass';fl.frequency.value=lp;node=g.connect(fl);}
+  node.connect(OUT);if(wet){const s=c.createGain();s.gain.value=wet;node.connect(s).connect(REV);}
+  o.start(t);o.stop(t+dur+0.05);
+}
+// ベル（鉄琴のような音）：基音＋非整数倍音を重ねる
+function bell(f,at,vol=0.16,dur=0.5){osc(f,at,dur,{vol,wet:.5});osc(f*2,at,dur*0.5,{vol:vol*.32,wet:.5});osc(f*3,at,dur*0.22,{vol:vol*.1,wet:.4});}
+// 明るいシンセの和音（ファンファーレ用）：のこぎり波2本を少しずらして柔らかく
+function pad(f,at,dur,vol=0.07){osc(f,at,dur,{type:'sawtooth',vol,a:.02,lp:2400,detune:-7,wet:.5});osc(f,at,dur,{type:'sawtooth',vol,a:.02,lp:2400,detune:7,wet:.5});}
+// キラキラ：高音の短いベルをランダムに散らす
+// 余韻の飾り：主和音（ド・ミ・ソ）の音だけを順に、小さく鳴らす（不協和にならないよう乱数は使わない）
+function sparkle(at,n=6){const T=[1567.98,2093,1318.51,1567.98,2093,2637.02];for(let i=0;i<n;i++)bell(T[i%T.length],at+i*0.06,0.035,0.3);}
+// バイブレーション（Android の Chrome とアプリ版。iPhone の Safari は未対応）
+const VIBE={tap:8,right:[18,40,26],combo:[18,35,18,35,40],partial:[30,60,30],wrong:[60,50,60],fanfare:[30,60,30,60,30,60,140],goal:[30,50,30,50,30,50,30,50,180],end:[50],clear:[30,60,30,60,140]};
+function buzz(kind){if(!vibeOn||!navigator.vibrate)return;try{navigator.vibrate(VIBE[kind]||0);}catch(e){}}
+function sfx(kind){
+  buzz(kind);
+  if(!soundOn)return;
+  try{
+    const C=[523.25,587.33,659.25,698.46,783.99,880,987.77,1046.5,1174.66,1318.51,1396.91,1567.98,1760,1975.53,2093];
+    if(kind==='tap'){osc(1200,0,0.05,{vol:.08,slide:1700,wet:0});osc(2400,0,0.02,{type:'triangle',vol:.03,wet:0});}
+    // 正解：明るい2音のチャイム（ド→ミの完全な響き）
+    else if(kind==='right'){bell(1046.5,0,.17,.45);bell(1567.98,0.085,.17,.6);osc(523.25,0,.25,{type:'triangle',vol:.06,wet:.3});}
+    // 連続正解・大問全問正解：上昇アルペジオ＋キラキラ
+    // 連続正解・大問全問正解：正解と同じチャイムに、もう1音（上のド）を足しただけの控えめな上昇
+    else if(kind==='combo'){bell(1046.5,0,.15,.45);bell(1318.51,0.08,.14,.45);bell(1567.98,0.16,.14,.6);osc(523.25,0,.3,{type:'triangle',vol:.05,wet:.3});}
+    // 一部正解：やわらかい2音
+    // 一部正解：やわらかい1音（正解より低く短い）
+    else if(kind==='partial'){bell(783.99,0,.12,.35);osc(392,0,.25,{type:'triangle',vol:.05,wet:.3});}
+    // 不正解：低く丸い「ぼん・ぼん」（耳に痛くないよう低域を残してこもらせる）
+    else if(kind==='wrong'){osc(311,0,0.17,{type:'triangle',vol:.22,lp:900,wet:.2});osc(155.5,0,0.17,{type:'sine',vol:.18,wet:.1});osc(233,0.15,0.32,{type:'triangle',vol:.2,lp:800,slide:208,wet:.25});osc(116.5,0.15,0.32,{type:'sine',vol:.16,wet:.1});}
+    // レッスン完了：ファンファーレ（ド・ミ・ソ → 主和音）＋キラキラ
+    else if(kind==='fanfare'||kind==='clear'){
+      [[523.25,0],[659.25,.12],[783.99,.24]].forEach(([f,t])=>{pad(f,t,.18,.06);bell(f*2,t,.1,.3);});
+      [523.25,659.25,783.99,1046.5].forEach(f=>pad(f,.38,1.1,.05));bell(2093,.38,.12,1.2);bell(1567.98,.38,.1,1);osc(130.81,.38,1.1,{type:'triangle',vol:.12,wet:.3});sparkle(.55,8);}
+    // 今日の目標達成：上昇スケール＋ジャジャーン
+    else if(kind==='goal'){[0,2,4,7,9,11].forEach((k,i)=>bell(C[k+2]||2093,i*0.06,.12,.3));[659.25,830.61,987.77,1318.51].forEach(f=>pad(f,.42,1.2,.05));bell(2637,.42,.1,1.2);osc(164.81,.42,1.2,{type:'triangle',vol:.12,wet:.3});sparkle(.6,10);}
+    else if(kind==='end'){[783.99,659.25,523.25].forEach((f,i)=>bell(f,i*0.15,.12,.45));}
+  }catch(e){}
+}
+// 紙吹雪（目標達成・合格のとき）。動きを減らす設定の端末では出さない
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const cv=document.createElement('canvas'),W=innerWidth,H=innerHeight,dpr=devicePixelRatio||1;cv.width=W*dpr;cv.height=H*dpr;
+  cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60';document.body.appendChild(cv);
+  const g=cv.getContext('2d');g.scale(dpr,dpr);
+  const col=['#1d5c7a','#2c7a4b','#c77412','#c03d2a','#72b6d6','#6cc290'];
+  const P=[...Array(90)].map(()=>({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*9,vy:-Math.random()*10-4,r:Math.random()*6+4,a:Math.random()*6,va:(Math.random()-.5)*.3,c:col[Math.floor(Math.random()*col.length)],e:Math.random()<.5}));
+  const t0=performance.now();
+  (function step(t){const k=(t-t0)/1000;g.clearRect(0,0,W,H);
+    P.forEach(p=>{p.vy+=.32;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;g.save();g.translate(p.x,p.y);g.rotate(p.a);g.globalAlpha=Math.max(0,1-k/2.2);g.fillStyle=p.c;
+      if(p.e){g.beginPath();g.ellipse(0,0,p.r*.7,p.r*.5,0,0,7);g.fill();}else g.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);g.restore();});
+    if(k<2.2)requestAnimationFrame(step);else cv.remove();})(t0);
+}
+// 画面に触れるたびに音声出力を起こしておく（端末は「操作のあと」でないと音を出させないため）
+function unlockAudio(){if(!soundOn)return;try{const c=ac();if(!c)return;if(c.state!=='running')c.resume();
+  // 無音を一瞬鳴らして出力を確定させる
+  const b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}}
+['pointerup','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true,capture:true}));
+// アプリに戻ってきたら出力を再開する
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&AC&&AC.state!=='running'){try{AC.resume();}catch(e){}}});
+function audioState(){if(!(window.AudioContext||window.webkitAudioContext))return'この端末は音声合成に対応していません';if(!AC)return'未使用（最初の操作で準備します）';return{running:'再生できる状態',suspended:'一時停止中（画面に触れると再開します）',closed:'停止',interrupted:'中断'}[AC.state]||AC.state;}
+// ===== 初回起動の案内 =====
+let onb=null;   // {step}
+function onbSteps(){return['hello','exam','goal','view'].concat(APPB()?['notify']:[]);}
+function onbHTML(){
+  const st=onbSteps(),k=st[onb.step],ex=examSel(),today=dayKey(new Date()),rc=remindCfg(),pad=n=>String(n).padStart(2,'0');
+  const card=(attr,on,title,sub)=>`<button class="ocard" ${attr} aria-pressed="${on}"><b>${title}</b>${sub?`<span>${sub}</span>`:''}</button>`;
+  let body='';
+  if(k==='hello')body=`<div class="ohero">${$('.brandmark').outerHTML}</div><h2 class="otitle">QC検定2級 ドリルへようこそ</h2>
+    <ul class="olist"><li><b>学習ロード</b><span>4級の基本から2級の総仕上げまで、8つの章を順に進めます</span></li>
+    <li><b>毎日の目標と連続記録</b><span>決めた問題数を解いた日が、連続記録の1日になります</span></li>
+    <li><b>間隔をあけた復習</b><span>間違えた問題や忘れかけた問題を、ちょうどよい間隔で出し直します</span></li></ul>
+    <p class="note">これから受験日・目標・表示を設定します。あとから右上の設定で変えられます。</p>`;
+  if(k==='exam')body=`<h2 class="otitle">いつ受験しますか</h2><p class="note">ホームに試験日までの日数と申込期間を表示します。</p><div class="ocards">
+    ${EXAMS.filter(e=>e.date>=today).map(e=>card(`data-oexam="${e.id}"`,ex.id===e.id||(ex.id==='auto'&&e===EXAMS.find(x=>x.date>=today)),`${esc(e.label)}（${e.date}）`,e.apply?`申込受付 ${e.apply[0]}〜${e.apply[1]}`:'')).join('')}
+    ${card('data-oexam="custom"',ex.id==='custom','日付を指定する','次の回が未発表のときなど')}
+    ${ex.id==='custom'?`<input type="date" id="onbDate" value="${esc(ex.d)}" aria-label="試験日">`:''}
+    ${card('data-oexam="none"',ex.id==='none','まだ決めていない','試験日の表示を出しません')}</div>`;
+  if(k==='goal')body=`<h2 class="otitle">1日に何問解きますか</h2><p class="note">1問およそ1分が目安です。続けやすい量を選んでください。</p><div class="ocards">
+    ${[[5,'気軽に','約5分'],[10,'ふつう','約10分'],[20,'しっかり','約20分'],[30,'本気','約30分']].map(([n,l,m])=>card(`data-ogoal="${n}"`,(P.goal||10)===n,`${n}問　${l}`,m)).join('')}</div>`;
+  if(k==='view')body=`<h2 class="otitle">見やすさを選ぶ</h2>
+    <div class="srow col"><div class="t"><b>文字サイズ</b></div><div class="seg">${[['0.9','小'],['1','標準'],['1.15','大'],['1.3','特大']].map(([v,l])=>`<button data-ofs="${v}" aria-pressed="${fontScale===v}">${l}</button>`).join('')}</div>
+    <p class="opreview">工程能力指数 Cpk は、平均のかたよりを考慮した指数である。</p></div>
+    <div class="srow col"><div class="t"><b>テーマ</b></div><div class="seg">${[['auto','端末に合わせる'],['light','ライト'],['dark','ダーク']].map(([v,l])=>`<button data-otheme="${v}" aria-pressed="${theme===v}">${l}</button>`).join('')}</div></div>`;
+  if(k==='notify')body=`<h2 class="otitle">毎日、声をかけましょうか</h2><p class="note">指定した時刻に、その日の目標が終わっていなければ通知します。達成済みの日は通知しません。</p>
+    <div class="ocards">${card('data-orem="on"',rc.on,'通知する','おすすめ')}${card('data-orem="off"',!rc.on,'通知しない','あとから設定で変えられます')}</div>
+    ${rc.on?`<div class="srow"><div class="t"><b>通知する時刻</b></div><input type="time" id="onbTime" value="${pad(rc.h)}:${pad(rc.m)}" aria-label="通知する時刻"></div>`:''}`;
+  const last=onb.step===st.length-1;
+  return `<div class="oin"><div class="odots" aria-label="${onb.step+1}／${st.length}">${st.map((_,i)=>`<i class="${i<=onb.step?'on':''}"></i>`).join('')}</div>
+  <button class="oskip" data-oskip>スキップ</button>
+  <div class="obody">${body}</div></div>
+  <div class="actionbar"><div class="in row"><button class="btn ghost" data-oback ${onb.step?'':'style="visibility:hidden" tabindex="-1" aria-hidden="true"'}>戻る</button><button class="btn block" data-onext>${last?'はじめる':'次へ'}</button></div></div>`;
+}
+function openOnb(){onb={step:0};$('#onb').innerHTML=onbHTML();$('#onb').hidden=false;document.body.classList.add('onbopen');}
+function closeOnb(){try{localStorage.setItem('qc2-onb','done');}catch(e){}$('#onb').hidden=true;document.body.classList.remove('onbopen');onb=null;render();}
+function onbRefresh(){$('#onb').innerHTML=onbHTML();}
+$('#onb').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;sfx('tap');
+  if(d.oskip!=null){closeOnb();return;}
+  if(d.oback!=null){onb.step=Math.max(0,onb.step-1);onbRefresh();return;}
+  if(d.onext!=null){if(onb.step>=onbSteps().length-1){closeOnb();sfx('right');return;}onb.step++;onbRefresh();$('#onb').scrollTop=0;return;}
+  if(d.oexam){try{localStorage.setItem('qc2-exam',d.oexam);}catch(x){}onbRefresh();return;}
+  if(d.ogoal){P.goal=+d.ogoal;persist();onbRefresh();return;}
+  if(d.ofs){fontScale=d.ofs;try{localStorage.setItem('qc2-fs',fontScale);}catch(x){}applyFont();onbRefresh();return;}
+  if(d.otheme){theme=d.otheme;try{localStorage.setItem('qc2-theme',theme);}catch(x){}applyTheme();onbRefresh();return;}
+  if(d.orem){const c=remindCfg();c.on=d.orem==='on';saveRemind(c);syncNative();onbRefresh();return;}
+});
+$('#onb').addEventListener('change',e=>{
+  if(e.target.id==='onbDate'){try{localStorage.setItem('qc2-exam-date',e.target.value);}catch(x){}}
+  if(e.target.id==='onbTime'){const [h,m]=e.target.value.split(':').map(Number);const c=remindCfg();c.h=h||0;c.m=m||0;saveRemind(c);}
+});
+// 初回だけ表示する。すでに解答記録がある人（以前の版からの更新）には出さない
+function maybeOnb(){let done=false;try{done=localStorage.getItem('qc2-onb')==='done';}catch(e){}
+  if(done)return;if(Object.keys(P.stats).length){try{localStorage.setItem('qc2-onb','done');}catch(e){}return;}openOnb();}
+// ===== 電卓（試験で使える √ 付き電卓を想定。メモリ M+ M− MR MC つき） =====
+const CALC={ex:'',res:null,mem:0,err:''};
+// 式を安全に計算する（eval は使わず、四則・かっこ・√・二乗だけを解釈する）
+function calcEval(src){
+  const t=src.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');let i=0;
+  const peek=()=>t[i],eat=c=>{if(t[i]===c){i++;return true;}return false;};
+  function num(){let s=i;while(i<t.length&&/[0-9.]/.test(t[i]))i++;if(s===i)throw 0;const v=parseFloat(t.slice(s,i));if(isNaN(v))throw 0;return v;}
+  function atom(){
+    if(eat('-'))return -atom();
+    if(eat('√'))return Math.sqrt(atom());
+    let v;if(eat('(')){v=expr();if(!eat(')'))throw 0;}else if(t.startsWith('Ans',i)){i+=3;v=CALC.res||0;}else v=num();
+    while(eat('²'))v=v*v;return v;}
+  function term(){let v=atom();for(;;){if(eat('*'))v*=atom();else if(eat('/'))v/=atom();else return v;}}
+  function expr(){let v=term();for(;;){if(eat('+'))v+=term();else if(eat('-'))v-=term();else return v;}}
+  const v=expr();if(i<t.length)throw 0;return v;
+}
+const fmtCalc=v=>{if(!isFinite(v))return'エラー';const a=Math.abs(v);if(a!==0&&(a>=1e10||a<1e-6))return v.toExponential(6);return String(+v.toPrecision(10));};
+function calcHTML(){
+  const K=[['MC','MR','M−','M+'],['C','(',')','⌫'],['√','x²','÷','×'],['7','8','9','−'],['4','5','6','+'],['1','2','3','='],['0','.','Ans','']];
+  return `<div class="sheethead"><strong>電卓</strong><button class="iconbtn" data-cclose aria-label="閉じる">${ICON.close}</button></div>
+  <div class="cdisp" aria-live="polite"><div class="cexp">${esc(CALC.ex)||'&nbsp;'}</div><div class="cres">${CALC.err?esc(CALC.err):CALC.res!=null?esc(fmtCalc(CALC.res)):'0'}</div>${CALC.mem?`<span class="cmem">M ${esc(fmtCalc(CALC.mem))}</span>`:''}</div>
+  <div class="ckeys">${K.flat().map(k=>k?`<button class="ck ${k==='='?'eq':/^[0-9.]$|Ans/.test(k)?'n':'op'}" data-ck="${k}" aria-label="${{'⌫':'1文字消す','√':'ルート','x²':'二乗','−':'引く','×':'掛ける','÷':'割る','M+':'メモリに足す','M−':'メモリから引く','MR':'メモリを呼び出す','MC':'メモリを消す','C':'クリア'}[k]||k}">${k}</button>`:'<span></span>').join('')}</div>`;
+}
+function openCalc(){$('#calcBody').innerHTML=calcHTML();showSheet('#calc');}
+function calcPress(k){
+  CALC.err='';
+  const cur=()=>{try{return calcEval(CALC.ex);}catch(e){return null;}};
+  if(k==='C'){CALC.ex='';CALC.res=null;}
+  else if(k==='⌫')CALC.ex=CALC.ex.endsWith('Ans')?CALC.ex.slice(0,-3):CALC.ex.slice(0,-1);
+  else if(k==='='){if(!CALC.ex)return;const v=cur();if(v==null){CALC.err='式を確認してください';}else{CALC.res=v;CALC.ex='';}}
+  else if(k==='x²')CALC.ex+='²';
+  else if(k==='MC')CALC.mem=0;
+  else if(k==='MR')CALC.ex+=fmtCalc(CALC.mem);
+  else if(k==='M+'||k==='M−'){const v=CALC.ex?cur():CALC.res;if(v==null){CALC.err='式を確認してください';}else{CALC.mem+=k==='M+'?v:-v;if(CALC.ex){CALC.res=v;CALC.ex='';}}}
+  else{
+    // 計算結果のすぐ後に演算子を押したら、結果（Ans）から続ける
+    if(!CALC.ex&&CALC.res!=null&&/^[+−×÷²]$/.test(k))CALC.ex='Ans';
+    CALC.ex+=k;}
+  $('#calcBody').innerHTML=calcHTML();
+}
+$('#calc').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.cclose!=null){closeSheets();return;}if(b.dataset.ck){buzz('tap');calcPress(b.dataset.ck);}});
+
+// ===== 問題に関係する数値表を開く =====
+// 解説の表記（t(9, 0.05)、χ²(9, 0.025)、F(2, 6; 0.05)、K＝1.37、n＝5、N＝36）から表と該当のマスを決める
+function tableFor(text){
+  let m;
+  if((m=text.match(/F\((\d+), ?(\d+); ?(0\.0?25|0\.05)\)/)))return{tab:m[3]==='0.05'?'F05':'F025',r:T.F.f2.indexOf(+m[2]),c:T.F.f1.indexOf(+m[1])};
+  if((m=text.match(/χ²\((\d+), ?([0-9.]+)\)/)))return{tab:'chi2',r:T.chi2.df.indexOf(+m[1]),c:T.chi2.P.indexOf(+m[2])};
+  if((m=text.match(/\bt\((\d+), ?(0\.\d+)\)/)))return{tab:'t',r:T.t.df.indexOf(+m[1]),c:T.t.P.indexOf(+m[2])};
+  if((m=text.match(/符号検定表|大波|小波/))){const n=text.match(/N＝(\d+)/);return{tab:'sign',n:n?+n[1]:null};}
+  if(/管理図|A2|D4|d2|X̄|R̄/.test(text)){const n=text.match(/n＝(\d+)/);return{tab:'cc',r:n?Object.keys(CC).indexOf(n[1]):-1,c:-1};}
+  if((m=text.match(/K＝(\d)\.(\d)(\d)/)))return{tab:'norm',r:+m[1]*10+ +m[2],c:+m[3]};
+  if(/正規分布|上側確率|u0|標準正規/.test(text))return{tab:'norm',r:-1,c:-1};
+  if(/t ?分布|t0|t 検定/.test(text))return{tab:'t',r:-1,c:-1};
+  if(/χ²|カイ二乗/.test(text))return{tab:'chi2',r:-1,c:-1};
+  if(/分散比|F0|F 検定/.test(text))return{tab:'F05',r:-1,c:-1};
+  return null;
+}
+// いま表示している問題に合わせて数値表を開く。解答後だけ該当のマスを強調する（解答前は表の種類だけ）
+function openSheetFor(){
+  let txt='',rev=false;
+  if(view==='drill'&&quiz&&quiz.i<quiz.list.length){const [s,e]=grpRange(quiz.list,quiz.i);const it=quiz.list[s];rev=!!it.checked;
+    txt=quiz.list.slice(s,e).map(x=>x.q+' '+x.ex).join(' ')+(it.kind==='x'?' '+SETS[it.set].stem:'');}
+  else if(view==='mock'&&mock&&!mock.done){const it=mock.list[mock.i];txt=it.q+' '+(it.kind==='x'?SETS[it.set].stem+' '+SETS[it.set].title:it.ex);}
+  const f=tableFor(txt);
+  if(f)tableTab=f.tab;
+  openSheet();
+  if(f&&rev)hlCell(f);
+}
+function hlCell(f){
+  const tb=$('#sheetBody table.nt');if(!tb)return;let cell=null;
+  if(f.tab==='sign'&&f.n!=null){cell=[...tb.querySelectorAll('tbody th')].find(th=>th.textContent===String(f.n));if(cell){cell.classList.add('hl');cell=cell.nextElementSibling;}}
+  else if(f.r>=0){const tr=tb.querySelectorAll('tbody tr')[f.r];if(tr){tr.classList.add('hlrow');if(f.c>=0)cell=tr.querySelectorAll('td')[f.c];}}
+  if(cell){cell.classList.add('hl');cell.scrollIntoView({block:'center',inline:'center'});}
+}
+function celebrateGoal(){setTimeout(()=>{toast(`今日の目標達成！ 連続 ${streakInfo().cur} 日`);sfx('goal');confetti();},450);}
+const PRAISE=['正解！','いいですね！','その調子！','完璧です','よくできました'];
+const pickPraise=()=>PRAISE[Math.floor(Math.random()*PRAISE.length)];
+// ===== 設定（音・テーマ・文字サイズは端末ごと、1日の目標は記録と一緒に保存） =====
+let fontScale='1';try{fontScale=localStorage.getItem('qc2-fs')||'1';}catch(e){}
+function applyFont(){document.documentElement.style.setProperty('--fs',fontScale);}
+applyFont();
+let theme='auto';try{theme=localStorage.getItem('qc2-theme')||'auto';}catch(e){}
+function applyTheme(){const r=document.documentElement;if(theme==='auto')delete r.dataset.theme;else r.dataset.theme=theme;}
+applyTheme();
+// リマインダー（Android アプリ版だけ。window.QC2App はアプリ側が用意する）
+const APPB=()=>{try{return window.QC2App||null;}catch(e){return null;}};
+function remindCfg(){try{return Object.assign({on:false,h:20,m:0},JSON.parse(localStorage.getItem('qc2-remind')||'{}'));}catch(e){return{on:false,h:20,m:0};}}
+function saveRemind(c){try{localStorage.setItem('qc2-remind',JSON.stringify(c));}catch(e){}const b=APPB();if(b)try{b.setReminder(!!c.on,c.h|0,c.m|0);}catch(e){}}
+// 今日の解答数などをアプリ側へ渡す（目標を達成した日は通知しないため）
+function syncNative(){const b=APPB();if(!b)return;try{const st=streakInfo();b.setStatus(dayKey(new Date()),st.today|0,st.goal|0,st.cur|0);}catch(e){}}
+function settingsHTML(){
+  const seg=(key,cur,vals)=>`<div class="seg">${vals.map(([v,l])=>`<button data-setk="${key}" data-val="${v}" aria-pressed="${String(cur)===String(v)}">${l}</button>`).join('')}</div>`;
+  const sw=(key,on,lab)=>`<button class="switch" role="switch" data-sw="${key}" aria-checked="${!!on}" aria-label="${lab}"></button>`;
+  const H=APP.history,ex=examSel(),rc=remindCfg(),app=APPB(),pad=n=>String(n).padStart(2,'0');
+  let allowed=true;if(app)try{allowed=app.notifAllowed();}catch(e){}
+  const today=dayKey(new Date());
+  return `
+  <div class="setcard"><h3>表示</h3>
+    <div class="srow col"><div class="t"><b>テーマ</b></div>${seg('theme',theme,[['auto','端末に合わせる'],['light','ライト'],['dark','ダーク']])}</div>
+    <div class="srow col"><div class="t"><b>文字サイズ</b><span>問題文・解説を含む画面全体の文字の大きさ</span></div>${seg('fs',fontScale,[['0.9','小'],['1','標準'],['1.15','大'],['1.3','特大']])}</div>
+    <div class="srow"><div class="t"><b>効果音</b><span>正解・不正解・目標達成のときに鳴らす</span></div>${sw('sound',soundOn,'効果音')}</div>
+    <div class="srow"><div class="t"><b>音の確認</b><span id="audState">状態：${esc(audioState())}。鳴らないときは、端末の「メディアの音量」を上げてください（着信音の音量とは別です）。</span></div><button class="btn ghost sm" data-test-sound>鳴らす</button></div>
+    <div class="srow"><div class="t"><b>バイブレーション</b><span>正解・不正解などで振動する（Android）</span></div>${sw('vibe',vibeOn,'バイブレーション')}</div>
+  </div>
+  <div class="setcard"><h3>学習</h3>
+    <div class="srow col"><div class="t"><b>1日の目標</b><span>この問題数を解いた日が、連続記録の1日になります</span></div>${seg('goal',P.goal||10,[[5,'5問'],[10,'10問'],[20,'20問'],[30,'30問']])}</div>
+    <div class="srow col"><div class="t"><b>受験する回</b><span>ホームに試験日までの日数と申込期間を表示します</span></div>
+      <select id="examSel" aria-label="受験する回"><option value="auto" ${ex.id==='auto'?'selected':''}>次の試験（自動）</option>${EXAMS.map(e=>`<option value="${e.id}" ${ex.id===e.id?'selected':''} ${e.date<today?'disabled':''}>${esc(e.label)}（${e.date}）${e.date<today?'・終了':''}</option>`).join('')}<option value="custom" ${ex.id==='custom'?'selected':''}>日付を指定する</option></select>
+      ${ex.id==='custom'?`<input type="date" id="examDate" value="${esc(ex.d)}" aria-label="試験日">`:''}
+      <span class="note" style="margin:0">公式に発表された回だけを載せています（${EXAMS_CHECKED} 時点）。次の回が未発表のときは日付を指定してください。</span></div>
+  </div>
+  <div class="setcard"><h3>通知</h3>
+    ${app?`<div class="srow"><div class="t"><b>毎日のリマインダー</b><span>指定した時刻に、今日の目標が終わっていなければ通知します</span></div>${sw('remind',rc.on,'毎日のリマインダー')}</div>
+    ${rc.on?`<div class="srow"><div class="t"><b>通知する時刻</b></div><input type="time" id="remTime" value="${pad(rc.h)}:${pad(rc.m)}" aria-label="通知する時刻"></div>
+    ${allowed?`<div class="srow"><div class="t"><span>数分ほど遅れて届くことがあります。</span></div><button class="btn ghost sm" data-test-notify>テスト通知</button></div>`:`<div class="srow"><div class="t"><b style="color:var(--ucl)">通知が許可されていません</b><span>Android の「設定 → アプリ → QC検定2級 → 通知」で許可してください。</span></div></div>`}`:''}`
+    :`<div class="srow"><div class="t"><b>毎日のリマインダー</b><span>Android アプリ版で使えます。Web 版では通知を送れません。</span></div></div>`}
+  </div>
+  <div class="setcard"><h3>このアプリについて</h3>
+    <div class="srow"><div class="t"><b>はじめの案内</b><span>初回起動時の設定（受験日・目標・表示・通知）をもう一度行う</span></div><button class="btn ghost sm" data-reonb>表示する</button></div>
+    <div class="srow"><div class="t"><b>バージョン</b><span>${APP.date} 更新</span></div><span class="ver-big" style="font-size:1.1rem">v${APP.version}</span></div>
+    <div style="padding:6px 0 10px">${H.slice(0,3).map(([v,d,t])=>`<div class="hist"><b>v${v}</b><span class="d">${d}</span><span>${esc(t)}</span></div>`).join('')}
+    ${H.length>3?`<details class="oldhist"><summary>以前の変更（${H.length-3}件）</summary>${H.slice(3).map(([v,d,t])=>`<div class="hist"><b>v${v}</b><span class="d">${d}</span><span>${esc(t)}</span></div>`).join('')}</details>`:''}</div>
+  </div>`;
+}
+function openSettings(){$('#setBody').innerHTML=settingsHTML();showSheet('#setSheet');$('#setClose').focus();}
+function refreshSettings(){const y=$('#setSheet .in')?$('#setSheet').scrollTop:0;$('#setBody').innerHTML=settingsHTML();$('#setSheet').scrollTop=y;render();}
+$('#setBtn').innerHTML=ICON.tune;$('#setClose').innerHTML=ICON.close;$('#sheetClose').innerHTML=ICON.close;
+$('#setBtn').addEventListener('click',()=>{sfx('tap');openSettings();});
+$('#streakChip').addEventListener('click',()=>{sfx('tap');streakSheet();});
+$('#setClose').addEventListener('click',()=>{closeSheets();$('#setBtn').focus();});
+$('#setSheet').addEventListener('click',e=>{
+  if(e.target.closest('[data-reonb]')){closeSheets();openOnb();return;}
+  const ts=e.target.closest('[data-test-sound]');if(ts){const was=soundOn;soundOn=true;unlockAudio();sfx('right');soundOn=was;setTimeout(()=>{const el=$('#audState');if(el)el.textContent='状態：'+audioState()+'。鳴らないときは、端末の「メディアの音量」を上げてください（着信音の音量とは別です）。';},300);return;}
+  const t=e.target.closest('[data-test-notify]');if(t){const b=APPB();if(b)try{b.testNotify();toast('テスト通知を送りました');}catch(x){}return;}
+  const w=e.target.closest('[data-sw]');
+  if(w){const k=w.dataset.sw;
+    if(k==='sound'){soundOn=!soundOn;try{localStorage.setItem('qc2-sound',soundOn?'on':'off');}catch(x){}if(soundOn)sfx('tap');}
+    if(k==='vibe'){vibeOn=!vibeOn;try{localStorage.setItem('qc2-vibe',vibeOn?'on':'off');}catch(x){}if(vibeOn)buzz('right');}
+    if(k==='remind'){const c=remindCfg();c.on=!c.on;saveRemind(c);syncNative();}
+    refreshSettings();return;}
+  const b=e.target.closest('[data-setk]');if(!b)return;const k=b.dataset.setk,v=b.dataset.val;
+  if(k==='theme'){theme=v;try{localStorage.setItem('qc2-theme',v);}catch(x){}applyTheme();}
+  if(k==='fs'){fontScale=v;try{localStorage.setItem('qc2-fs',v);}catch(x){}applyFont();}
+  if(k==='goal'){P.goal=+v;persist();}
+  sfx('tap');refreshSettings();});
+$('#setSheet').addEventListener('change',e=>{
+  if(e.target.id==='examSel'){try{localStorage.setItem('qc2-exam',e.target.value);}catch(x){}refreshSettings();}
+  if(e.target.id==='examDate'){try{localStorage.setItem('qc2-exam-date',e.target.value);}catch(x){}render();}
+  if(e.target.id==='remTime'){const [h,m]=e.target.value.split(':').map(Number);const c=remindCfg();c.h=h||0;c.m=m||0;saveRemind(c);toast(`毎日 ${e.target.value} に通知します`);}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOpen())closeSheets();});
+function syncSoundBtn(){}
+
+syncSoundBtn();
+initStore();syncNative();maybeOnb();
+// アプリ版：起動時にリマインダー設定をアプリ側へ渡し直す
+{const c=remindCfg();if(c.on)saveRemind(c);}
+setInterval(countdown,60e3);
+</script>
