@@ -24,8 +24,8 @@ android {
         minSdk = 26
         targetSdk = 34
         // CI から版数を渡す（指定がなければ下の既定値）
-        versionCode = (System.getenv("VERSION_CODE") ?: "18").toInt()
-        versionName = System.getenv("VERSION_NAME") ?: "2.4.0"
+        versionCode = (System.getenv("VERSION_CODE") ?: "19").toInt()
+        versionName = System.getenv("VERSION_NAME") ?: "2.5.0"
     }
 
     signingConfigs {

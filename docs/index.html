@@ -424,6 +424,18 @@ button.blank2{min-height:40px}button.blank2::before{content:"";position:absolute
 .primary svg,.resume svg,.lrow svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .primary b{display:block;font-size:1.1rem}.primary span span{font-size:.82rem;opacity:.9}.primary .go{margin-left:auto}
 .resume{border:2px solid var(--pri);margin-top:12px}.resume .ic{background:var(--pri-c);color:var(--on-pri-c)}
+.qtiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qtile{display:flex;align-items:center;gap:10px;padding:12px;border:0;border-radius:var(--r-lg);background:var(--card);box-shadow:var(--elev);cursor:pointer;text-align:left;min-height:64px;color:var(--ink);font:inherit}
+.qtile .ic{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--pri-c);color:var(--on-pri-c)}
+.qtile svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.qtile b{display:block;font-size:.92rem}.qtile>span:last-child{min-width:0}.qtile>span:last-child>span{display:block;font-size:.72rem;color:var(--muted);line-height:1.35}
+.qtile:disabled{opacity:.5;cursor:not-allowed}.qtile:active:not(:disabled){transform:scale(.98)}
+details.fold{padding:0;margin-top:14px}
+details.fold>summary{display:flex;align-items:center;gap:8px;min-height:48px;padding:12px 16px;font-weight:700;cursor:pointer;box-sizing:border-box}
+details.fold>summary .cnt{margin-left:auto;font-family:var(--f-num);font-weight:400;font-size:.82rem;color:var(--muted)}
+details.fold .foldin{display:grid;gap:12px;padding:0 16px 16px}
+details.fold .foldin.flat{display:block}
+.backlink{display:inline-flex;align-items:center;gap:4px;margin-top:12px}
 .panel.list{padding:4px 0}
 .lrow{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:10px 16px;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer;border-bottom:1px solid var(--line)}
 .lrow:last-child{border-bottom:0}.lrow>span:nth-child(2){flex:1;min-width:0}.lrow b{display:block}.lrow span span{font-size:.8rem;color:var(--muted)}
@@ -1393,9 +1405,10 @@ DAI.push(
 );
 // ===== バージョン情報と資料（公式ページ・規格） =====
 const APP = {
-  version: '2.4.0',
-  date: '2026-10-05',
+  version: '2.5.0',
+  date: '2026-10-07',
   history: [
+    ['2.5.0', '2026-10-07', '画面を整理。演習タブの先頭に「すぐ始める」（全分野・計算・知識・本試験形式・苦手を1タップで10問）、記録の書き出し・リセット・報告した誤りを「記録の管理」へ、資料は公式集から開くように'],
     ['2.4.0', '2026-10-05', '模擬試験を「手法だけ」「実践だけ」（各約50問・45分）でも受けられるように。本試験形式の選択肢を画面の下に固定し、スクロールせずに選べるように。模擬試験の問題一覧を分野・大問ごとの表示に'],
     ['2.3.0', '2026-10-05', '模擬試験を本番に合わせ、本試験形式の大問だけで約100問・90分に'],
     ['2.2.0', '2026-10-05', '試験日は一覧から選ぶ方式をやめ、自分で日付を入れる方式に（申込締切も任意で設定可）。公式集に記号の意味と読み方を追加'],
@@ -2621,7 +2634,11 @@ const ICON={
 
 // ===== 画面 =====
 let view='home';
-let practiceSub='drill',resSub='res';   // 下部ナビの「演習」「資料」で前回開いていた画面
+let practiceSub='drill',resSub='formulas';   // 下部ナビの「演習」「資料」で前回開いていた画面（資料は公式集から開く）
+// 畳める欄（data-keep）の開閉を端末に覚えておく
+let uiOpen={};try{uiOpen=JSON.parse(localStorage.getItem('qc2-ui')||'{}')||{};}catch(e){}
+const keepAttr=(k,def)=>`data-keep="${k}" ${(uiOpen[k]==null?def:uiOpen[k])?'open':''}`;
+document.addEventListener('toggle',e=>{const d=e.target;if(!d||!d.dataset||!d.dataset.keep)return;uiOpen[d.dataset.keep]=d.open;try{localStorage.setItem('qc2-ui',JSON.stringify(uiOpen));}catch(x){}},true);
 const drill={cats:new Set(Object.keys(CATS)),count:10,kind:'all'};
 let quiz=null;   // 演習セッション
 let mock=null;   // 模擬試験セッション
@@ -2630,7 +2647,7 @@ let lastSyl=null;
 let lastCardKey='';
 
 const NAV=[['home','ホーム'],['road','ロード'],['practice','演習'],['stats','成績'],['resg','資料']];
-const navKey=v=>v==='drill'||v==='mock'?'practice':v==='res'||v==='tables'||v==='formulas'?'resg':v;
+const navKey=v=>v==='drill'||v==='mock'?'practice':v==='res'||v==='tables'||v==='formulas'?'resg':v==='manage'?'stats':v;
 function renderNav(){
   const k=navKey(view);
   $('#tabs .in').innerHTML=NAV.map(([id,l])=>`<button role="tab" data-nav="${id}" aria-selected="${k===id}"><span class="pill">${ICON[id==='resg'?'res':id]}</span>${l}</button>`).join('');
@@ -2670,6 +2687,7 @@ function render(){
   else if(view==='drill')m.innerHTML=quiz?quizHTML():drillSetupHTML();
   else if(view==='mock')m.innerHTML=mock?mockHTML():mockStartHTML();
   else if(view==='stats')m.innerHTML=statsHTML();
+  else if(view==='manage')m.innerHTML=manageHTML();
   else if(view==='tables')m.innerHTML=subtabs('res')+tablesHTML('main');
   else if(view==='formulas')m.innerHTML=subtabs('res')+formulasHTML();
   else if(view==='res')m.innerHTML=subtabs('res')+resHTML();
@@ -2682,7 +2700,7 @@ function render(){
 }
 
 function subtabs(g){
-  const L=g==='practice'?[['drill','分野別演習'],['mock','模擬試験']]:[['res','資料'],['formulas','公式集'],['tables','数値表']];
+  const L=g==='practice'?[['drill','演習'],['mock','模擬試験']]:[['formulas','公式集'],['tables','数値表'],['res','資料']];
   return `<div class="subtabs" role="tablist">${L.map(([v,l])=>`<button data-v2="${v}" aria-pressed="${view===v}">${l}</button>`).join('')}</div>`;
 }
 // 今日の目標の円グラフ（SVG）
@@ -2732,8 +2750,7 @@ function homeHTML(){
     ${dueIds().length?`<button class="lrow" ${cont.a}><span class="ic">${ICON.flag}</span><span><b>学習ロードの続き</b><span>${esc(cont.t)}</span></span>${ICON.chev}</button>`:''}
     ${(()=>{const m=markedItems(),n=m.filter(i=>i.kind!=='x').length+new Set(m.filter(i=>i.kind==='x').map(i=>i.set)).size;
       return n?`<button class="lrow" data-act="marks"><span class="ic">${ICON.star}</span><span><b>あとで見る</b><span>登録した${n}問（大問は1問と数える）</span></span>${ICON.chev}</button>`:'';})()}
-    <button class="lrow" data-act="quick"><span class="ic">${ICON.bolt}</span><span><b>全分野から10問</b><span>計算・知識をランダムに</span></span>${ICON.chev}</button>
-    <button class="lrow" data-act="dai"><span class="ic">${ICON.sheet}</span><span><b>本試験形式</b><span>大問の穴埋め・正誤</span></span>${ICON.chev}</button>
+    <button class="lrow" data-act="godrill"><span class="ic">${ICON.bolt}</span><span><b>種類を選んで解く</b><span>全分野・計算・知識・苦手などから10問</span></span>${ICON.chev}</button>
     <button class="lrow" data-act="gomock"><span class="ic">${ICON.timer}</span><span><b>模擬試験</b><span>約100問・90分で合否判定</span></span>${ICON.chev}</button>
   </div>
   <p class="status" style="margin-inline:4px">${store.mode==='cloud'?'進捗はアカウントに保存されます（別の端末でも続きから）。':'進捗はこの端末に保存されます。'}</p>`;
@@ -2773,25 +2790,36 @@ function testSheet(ci){
   <button class="btn block" data-ctest="${ci}" ${ch.final&&!ready?'disabled':''}>${ch.final?'模擬試験を始める':cd?'もう一度受ける':'テストを始める'}</button>`);
 }
 
+// 演習タブの「すぐ始める」：1タップで10問。ラベルは「もう一度」でも同じ出題を作り直すのに使う
+const QUICK={
+  all:{lab:'全分野10問',ic:'bolt',sub:'計算と知識を混ぜて',ok:()=>true,make:()=>mixReview(buildList(ITEMS.filter(i=>i.kind!=='x'),10,false),3)},
+  g:{lab:'計算10問',ic:'calc',sub:'毎回数値が変わる',ok:()=>true,make:()=>buildList(ITEMS.filter(i=>i.kind==='g'),10,true)},
+  k:{lab:'知識10問',ic:'res',sub:'用語・手法の理解',ok:()=>true,make:()=>buildList(ITEMS.filter(i=>i.kind==='k'),10,true)},
+  x:{lab:'本試験形式',ic:'sheet',sub:'大問の穴埋め・正誤',ok:()=>true,make:()=>buildSets(ITEMS.filter(i=>i.kind==='x'),10,false)},
+  weak:{lab:'苦手の復習',ic:'redo',sub:'間違えが多い問題',ok:()=>weakIds().length>0,make:()=>{const w=weakIds().map(id=>BYID[id]);return buildList(w,Math.min(10,w.length),false);}},
+};
+const quickByLab=lab=>Object.values(QUICK).find(q=>q.lab===lab);
 function drillSetupHTML(){
   const acc=catAcc();
   const grp=f=>Object.entries(CATS).filter(([k,c])=>c.field===f).map(([k,c])=>{const p=pct(acc[k].c,acc[k].n);return `<button class="chip" data-cat="${k}" aria-pressed="${drill.cats.has(k)}">${c.name}${p!=null?` <span style="font-family:var(--f-num);opacity:.7">${p}%</span>`:''}</button>`;}).join('');
   const seg=(key,vals)=>`<div class="seg">${vals.map(([v,l])=>`<button data-set="${key}" data-val="${v}" aria-pressed="${String(drill[key])===String(v)}">${l}</button>`).join('')}</div>`;
-  const n=poolFor().length;
+  const n=poolFor().length,nw=weakIds().length;
+  const qs=Object.entries(QUICK).map(([k,q])=>{const ok=q.ok();
+    return `<button class="qtile" data-act="qs" data-qk="${k}" ${ok?'':'disabled'}><span class="ic">${ICON[q.ic]}</span><span><b>${q.lab}</b><span>${k==='weak'?(nw?`${nw}問から`:'まだありません'):q.sub}</span></span></button>`;}).join('');
   return subtabs('practice')+`
-  <h2>分野を選ぶ</h2>
-  <div class="panel" style="display:grid;gap:14px">
+  <h2>すぐ始める</h2>
+  <div class="qtiles">${qs}</div>
+  <details class="panel fold" ${keepAttr('drillpick',false)}><summary>分野・問題数を選んで解く<span class="cnt">${drill.cats.size}／${Object.keys(CATS).length} 分野</span></summary>
+  <div class="foldin">
     <div><div class="lbl">品質管理の手法</div><div class="chips" style="margin-top:6px">${grp('手法')}</div></div>
     <div><div class="lbl">品質管理の実践</div><div class="chips" style="margin-top:6px">${grp('実践')}</div></div>
-    <div class="actions"><button class="btn ghost" data-act="allcats">すべて選択</button><button class="btn ghost" data-act="nocats">選択を解除</button></div>
-  </div>
-  <h2>出題の設定</h2>
-  <div class="panel" style="display:grid;gap:12px">
+    <div class="actions"><button class="btn ghost sm" data-act="allcats">すべて選択</button><button class="btn ghost sm" data-act="nocats">選択を解除</button></div>
     <div><div class="lbl">問題の種類</div>${seg('kind',[['all','すべて'],['g','計算'],['k','知識'],['x','本試験形式']])}</div>
     <div><div class="lbl">問題数</div>${seg('count',[[10,'10問'],[20,'20問'],[30,'30問']])}</div>
     <p class="note" style="margin:0">対象 ${n} 問（計算問題は毎回数値が変わります${drill.kind==='x'?'。本試験形式は大問単位で出すため、問題数が少し増えることがあります':''}）</p>
-    <div><button class="btn" data-act="startdrill" ${n?'':'disabled'}>演習を始める</button></div>
-  </div>`;
+    <div><button class="btn" data-act="startdrill" ${n?'':'disabled'}>この条件で始める</button></div>
+  </div></details>
+  <p class="note" style="margin-inline:4px">レベル表の項目ごとに解くときは、資料タブの「出題範囲との対応」から。</p>`;
 }
 function poolFor(){return ITEMS.filter(i=>drill.cats.has(i.cat)&&(drill.kind==='all'||i.kind===drill.kind));}
 // 出題リスト作成：苦手を少し優先しつつ、種類が足りなければ計算問題を数値を変えて重ねる
@@ -3100,8 +3128,11 @@ function statsHTML(){
   <h2>分野別の正答率</h2>
   <div class="grid2"><div class="panel"><div class="lbl">品質管理の手法</div>${rows('手法')}</div><div class="panel"><div class="lbl">品質管理の実践</div>${rows('実践')}</div></div>
   <p class="note">破線は70%。赤は70%未満の分野。</p>
-  <h2>記録の管理</h2>
-  <div class="panel">${store.resetAsk?`<div class="confirm" style="margin-top:0">すべての解答記録と模擬試験の履歴を消去します。元に戻せません。<div class="actions" style="margin-top:8px"><button class="btn danger" data-act="resetdo">消去する</button><button class="btn ghost" data-act="resetno">やめる</button></div></div>`:`<button class="btn danger" data-act="resetask">記録をリセット</button>`}</div>
+  <button class="lrow panel" data-act="manage" style="margin-top:16px;border-radius:var(--r-lg)"><span class="ic">${ICON.sheet}</span><span><b>記録の管理</b><span>書き出し・読み込み、報告した誤り${(P.reports||[]).length?`（${P.reports.length}件）`:''}、リセット</span></span>${ICON.chev}</button>`;
+}
+// ===== 記録の管理（成績の下・設定から開く）：消す操作は誤って押さないよう最後に置く =====
+function manageHTML(){
+  return `<button class="linkbtn backlink" data-v2="stats">‹ 成績に戻る</button>
   <h2>記録の書き出し・読み込み</h2>
   <div class="panel">
     <p class="note" style="margin-top:0">解答記録をテキスト（JSON）で書き出し、別の端末やアプリ版・Web版の間で移せます。読み込むと、いまの記録は読み込んだ内容で置き換わります。</p>
@@ -3110,7 +3141,10 @@ function statsHTML(){
     ${store.io==='imp'?`<textarea id="ioText" rows="5" placeholder="書き出したテキストを貼り付け"></textarea>${store.ioErr?`<p class="note" style="color:var(--ucl)">${esc(store.ioErr)}</p>`:''}<div class="actions"><button class="btn danger sm" data-act="impdo">置き換えて読み込む</button><button class="btn ghost sm" data-act="ioclose">やめる</button></div>`:''}
   </div>
   <h2>報告した誤り（${(P.reports||[]).length}件）</h2>
-  <div class="panel">${reportsHTML()}<textarea id="rpCopy" rows="4" hidden readonly></textarea></div>`;
+  <div class="panel">${reportsHTML()}<textarea id="rpCopy" rows="4" hidden readonly></textarea></div>
+  <h2>記録のリセット</h2>
+  <div class="panel">${store.resetAsk?`<div class="confirm" style="margin-top:0">すべての解答記録と模擬試験の履歴を消去します。元に戻せません。<div class="actions" style="margin-top:8px"><button class="btn danger" data-act="resetdo">消去する</button><button class="btn ghost" data-act="resetno">やめる</button></div></div>`:`<button class="btn danger" data-act="resetask">記録をリセット</button>`}</div>
+  `;
 }
 function trendSVG(){
   const s=P.sessions;if(s.length<2)return '<p class="empty">演習を2回以上行うと、正答率の推移が表示されます。</p>';
@@ -3157,23 +3191,16 @@ function refLine(cat){
   return `<div class="ref"><span class="lbl">関連資料</span>${r.length?r.map(x=>esc(x[0])).join('、')+' ほか':'レベル表・4級用テキスト'}<button class="linkbtn" data-res="${cat}">資料を見る</button></div>`;
 }
 function resHTML(){
-  const n={k:KB.length,g:Object.keys(G).length,x:ITEMS.filter(i=>i.kind==='x').length,s:DAI.length};
   const sec=RES_LINKS.map(g=>`<h2>${esc(g.h)}</h2>${g.note?`<p class="note" style="margin-top:0">${esc(g.note)}</p>`:''}<div class="panel links">${g.items.map(([t,u,d])=>`<div class="lnk">${A(t,u)}${d?`<span>${esc(d)}</span>`:''}</div>`).join('')}</div>`).join('');
   const refs=Object.entries(CATS).map(([k,c])=>`<div class="refrow" id="res-${k}"><div class="nm"><span class="lbl">${c.field}</span>${esc(c.name)}</div><div>${(REFS[k]||[]).length?REFS[k].map(([no,t])=>`<div><b class="jis">${esc(no)}</b> ${esc(t)}</div>`).join(''):'<div class="note" style="margin:0">対応する JIS はありません。レベル表と4級用テキストを参照してください。</div>'}</div></div>`).join('');
-  return `<h2>出題範囲（2級レベル表）との対応</h2>
-  <p class="note" style="margin-top:0">日本規格協会「品質管理検定レベル表」（${SYL_VER}）の2級欄の全項目と、収録問題数・あなたの正答率です。【】は出題レベルの程度です。「演習」でその項目だけを出題します。2級の試験範囲には3級・4級の範囲も含まれるため、「3級：」「4級：」の見出しで、3級欄・4級欄のうち2級欄と重複しない項目も載せています。</p>
-  <div class="panel syl">${sylHTML()}</div>
+  const nsyl=SYLX.length;
+  return `<details class="panel fold" ${keepAttr('syl',false)}><summary>出題範囲（2級レベル表）との対応<span class="cnt">${nsyl}項目</span></summary>
+  <div class="foldin flat"><p class="note" style="margin-top:0">日本規格協会「品質管理検定レベル表」（${SYL_VER}）の2級欄の全項目と、収録問題数・あなたの正答率です。【】は出題レベルの程度です。「演習」でその項目だけを出題します。2級の試験範囲には3級・4級の範囲も含まれるため、「3級：」「4級：」の見出しで、3級欄・4級欄のうち2級欄と重複しない項目も載せています。</p>
+  <div class="syl">${sylHTML()}</div></div></details>
   ${sec}
-  <h2>分野ごとの関連規格</h2>
-  <div class="panel">${refs}</div>
-  <p class="note">規格の番号と名称は作成者の知識に基づきます。改正されている場合があるので、JIS 検索で最新版を確認してください。</p>
-  <h2>このアプリについて</h2>
-  <div class="panel about">
-    <div class="ver-big">v${APP.version}<small>${APP.date} 更新</small></div>
-    <p>知識問題 ${n.k} 問、計算問題 ${n.g} 種（毎回数値が変わる）、本試験形式 ${n.s} 題（${n.x} 問）。</p>
-    <p class="note">個人が作成した非公式の学習教材です。日本規格協会・日本科学技術連盟とは関係ありません。「QC検定」は日本規格協会の登録商標です。問題と解説はすべてオリジナルで、過去の試験問題は使用していません。</p>
-    <p class="note">更新履歴は右上の「設定」で確認できます。</p>
-  </div>`;
+  <details class="panel fold" id="refsFold" ${keepAttr('refs',false)}><summary>分野ごとの関連規格<span class="cnt">${Object.keys(CATS).length}分野</span></summary>
+  <div class="foldin flat">${refs}<p class="note">規格の番号と名称は作成者の知識に基づきます。改正されている場合があるので、JIS 検索で最新版を確認してください。</p></div></details>
+  <p class="note">収録問題の数・アプリの説明・更新履歴は、右上の「設定」にあります。</p>`;
 }
 // レベル表の大項目ごとに折りたたみ、項目ごとに問題数・正答率・演習ボタンを出す
 function sylHTML(){
@@ -3187,6 +3214,7 @@ function sylHTML(){
 // 演習・模試の状態は保ったまま資料タブへ移り、該当分野の行を強調する（タブで戻れば続きから）
 function openRes(cat){
   setView('res');
+  const f=document.getElementById('refsFold');if(f)f.open=true;
   const el=document.getElementById('res-'+cat);
   if(el){el.scrollIntoView({block:'center'});el.classList.add('hit');setTimeout(()=>el.classList.remove('hit'),1600);}
 }
@@ -3247,6 +3275,10 @@ $('#main').addEventListener('click',e=>{
     case 'dai':startQuiz(buildSets(ITEMS.filter(i=>i.kind==='x'),10,false),'本試験形式');break;
     case 'weak':{const w=weakIds().map(id=>BYID[id]);startQuiz(buildList(w,Math.min(10,w.length),false),'苦手の復習');break;}
     case 'gomock':setView('mock');break;
+    // 解き終えた演習の結果が残っていれば片付けてから、演習の最初の画面を開く
+    case 'godrill':if(quiz&&quiz.i>=quiz.list.length)quiz=null;setView('drill');break;
+    case 'qs':{const Q=QUICK[d.qk];if(Q&&Q.ok())startQuiz(Q.make(),Q.lab);break;}
+    case 'manage':setView('manage');break;
     case 'openset':openSettings();break;
     case 'resume':resumeSession();break;
     case 'dropsession':dropSession();break;
@@ -3266,7 +3298,7 @@ $('#main').addEventListener('click',e=>{
       sfx(ok===items.length?'combo':ok?'partial':'wrong');persist();render();if(!wasDone&&streakInfo().done)celebrateGoal();
       const fb=document.querySelector('.fb');if(fb)fb.scrollIntoView({block:'nearest',behavior:'smooth'});break;}
     case 'next':quiz.reportFor=null;quiz.act=null;quiz.i=grpRange(quiz.list,quiz.i)[1];if(quiz.i>=quiz.list.length&&(quiz.stage||quiz.ctest!=null)){finishPath();persist();}if(quiz.i>=quiz.list.length){const okk=quiz.correct/quiz.list.length>=.7;sfx(okk?'fanfare':'end');if(okk)setTimeout(confetti,300);}render();window.scrollTo(0,0);break;
-    case 'again':{const lab=quiz.label,sg=quiz.stage,ct=quiz.ctest;quiz=null;if(sg){startStage(sg);break;}if(ct!=null){startChapTest(ct);break;}if(lab==='分野別演習')startQuiz(buildList(poolFor(),drill.count,true),lab);else if(lab==='今日の復習'){if(dueIds().length)startReview();else render();}else if(lab==='苦手の復習'){const w=weakIds().map(id=>BYID[id]);if(w.length)startQuiz(buildList(w,Math.min(10,w.length),false),lab);else render();}else if(lab.startsWith('範囲：')&&lastSyl)startQuiz(buildList(lastSyl.ids.map(id=>BYID[id]),10,true),lab);else if(lab==='本試験形式')startQuiz(buildSets(ITEMS.filter(i=>i.kind==='x'),10,false),lab);else startQuiz(buildList(ITEMS.filter(i=>i.kind!=='x'),10,false),lab);break;}
+    case 'again':{const lab=quiz.label,sg=quiz.stage,ct=quiz.ctest;quiz=null;if(sg){startStage(sg);break;}if(ct!=null){startChapTest(ct);break;}if(lab==='分野別演習')startQuiz(buildList(poolFor(),drill.count,true),lab);else if(lab==='今日の復習'){if(dueIds().length)startReview();else render();}else if(lab==='苦手の復習'){const w=weakIds().map(id=>BYID[id]);if(w.length)startQuiz(buildList(w,Math.min(10,w.length),false),lab);else render();}else if(lab.startsWith('範囲：')&&lastSyl)startQuiz(buildList(lastSyl.ids.map(id=>BYID[id]),10,true),lab);else if(quickByLab(lab)&&quickByLab(lab).ok())startQuiz(quickByLab(lab).make(),lab);else startQuiz(buildList(ITEMS.filter(i=>i.kind!=='x'),10,false),lab);break;}
     case 'quitquiz':if(quizActive())askQuit();else{quiz=null;render();}break;
     case 'sheet':openSheetFor();break;
     case 'calc':openCalc();break;
@@ -3281,7 +3313,7 @@ $('#main').addEventListener('click',e=>{
     case 'rpcancel':quiz.reportFor=null;render();break;
     case 'rpsave':{const it=quiz.list[quiz.i];const note=($('#rpNote')||{}).value||'';
       (P.reports=P.reports||[]).push({id:it.id,cat:it.cat,t:Date.now(),q:it.q,a:String(it.choices[it.ans]),note:note.slice(0,500)});
-      P.reports=P.reports.slice(-100);quiz.reportFor=null;persist();toast('報告を保存しました（成績タブで確認できます）');render();break;}
+      P.reports=P.reports.slice(-100);quiz.reportFor=null;persist();toast('報告を保存しました（成績 → 記録の管理で確認できます）');render();break;}
     case 'rpcopy':copyText(reportsText(),$('#rpCopy'));break;
     case 'exp':store.io='exp';render();break;
     case 'expcopy':copyText(JSON.stringify(P),$('#ioText'));break;
@@ -3554,7 +3586,12 @@ function settingsHTML(){
     ${allowed?`<div class="srow"><div class="t"><span>数分ほど遅れて届くことがあります。</span></div><button class="btn ghost sm" data-test-notify>テスト通知</button></div>`:`<div class="srow"><div class="t"><b style="color:var(--ucl)">通知が許可されていません</b><span>Android の「設定 → アプリ → QC2級ドリル → 通知」で許可してください。</span></div></div>`}`:''}`
     :`<div class="srow"><div class="t"><b>毎日のリマインダー</b><span>Android アプリ版で使えます。Web 版では通知を送れません。</span></div></div>`}
   </div>
+  <div class="setcard"><h3>記録</h3>
+    <div class="srow"><div class="t"><b>記録の管理</b><span>書き出し・読み込み（端末の移行）、報告した誤り、リセット</span></div><button class="btn ghost sm" data-manage>開く</button></div>
+  </div>
   <div class="setcard"><h3>このアプリについて</h3>
+    ${(()=>{const n={k:KB.length,g:Object.keys(G).length,x:ITEMS.filter(i=>i.kind==='x').length,s:DAI.length};
+      return `<div class="srow col"><div class="t"><b>収録問題</b><span>知識問題 ${n.k} 問、計算問題 ${n.g} 種（毎回数値が変わる）、本試験形式 ${n.s} 題（${n.x} 問）。個人が作成した非公式の学習教材です。日本規格協会・日本科学技術連盟とは関係ありません。「QC検定」は日本規格協会の登録商標です。問題と解説はすべてオリジナルで、過去の試験問題は使用していません。</span></div></div>`;})()}
     <div class="srow"><div class="t"><b>はじめの案内</b><span>初回起動時の設定（受験日・目標・表示・通知）をもう一度行う</span></div><button class="btn ghost sm" data-reonb>表示する</button></div>
     ${pwaRow()}
     <div class="srow"><div class="t"><b>バージョン</b><span>${APP.date} 更新</span></div><span class="ver-big" style="font-size:1.1rem">v${APP.version}</span></div>
@@ -3619,6 +3656,7 @@ $('#streakChip').addEventListener('click',()=>{sfx('tap');streakSheet();});
 $('#setClose').addEventListener('click',()=>{closeSheets();$('#setBtn').focus();});
 $('#setSheet').addEventListener('click',e=>{
   if(e.target.closest('[data-reonb]')){closeSheets();openOnb();return;}
+  if(e.target.closest('[data-manage]')){closeSheets();setView('manage');return;}
   if(e.target.closest('[data-examclear]')){setLS('qc2-exam-date','');setLS('qc2-apply-end','');refreshSettings();return;}
   if(e.target.closest('[data-install]')){if(instEvt){const ev=instEvt;instEvt=null;ev.prompt();ev.userChoice.finally(()=>refreshSettings());}return;}
   if(e.target.closest('[data-upd]')){sfx('tap');if(upd.st!=='busy')checkUpdate();return;}
