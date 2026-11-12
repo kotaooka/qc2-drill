@@ -1358,7 +1358,7 @@ function manageHTML(){
   <h2>報告した誤り（${(P.reports||[]).length}件）</h2>
   <div class="panel">${reportsHTML()}<textarea id="rpCopy" rows="4" hidden readonly></textarea></div>
   <h2>記録のリセット</h2>
-  <div class="panel">${store.resetAsk?`<div class="confirm" style="margin-top:0">すべての解答記録と模擬試験の履歴を消去します。元に戻せません。<div class="actions" style="margin-top:8px"><button class="btn danger" data-act="resetdo">消去する</button><button class="btn ghost" data-act="resetno">やめる</button></div></div>`:`<button class="btn danger" data-act="resetask">記録をリセット</button>`}</div>
+  <div class="panel">${store.resetAsk?`<div class="confirm" style="margin-top:0">すべての解答記録と模擬試験の履歴を消します。元に戻せません。<div class="actions" style="margin-top:8px"><button class="btn danger" data-act="resetdo">記録を消す</button><button class="btn ghost" data-act="resetno">やめる</button></div></div>`:`<button class="btn danger" data-act="resetask">記録をリセット</button>`}</div>
   `;
 }
 function trendSVG(){
