@@ -41,7 +41,7 @@ META = (
     '<meta name="google-site-verification" content="xLVjdnAB_uJxX1D1qEyI_qkFT_PrQzqFOiInbc6AcJU">'
     '<meta property="og:type" content="website">'
     '<meta property="og:site_name" content="QC2級ドリル">'
-    '<meta property="og:title" content="QC2級ドリル｜QC検定®2級の無料問題集・模擬試験">'
+    '<meta property="og:title" content="QC2級ドリル｜QC検定®2級の無料問題集・模擬試験（非公式）">'
     f'<meta property="og:description" content="{DESC}">'
     f'<meta property="og:url" content="{URL}">'
     f'<meta property="og:image" content="{OGIMG}">'

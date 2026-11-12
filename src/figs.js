@@ -9,7 +9,7 @@ const FIG={
    <line class="f-mark" x1="${X(K)}" y1="${Y(K)-8}" x2="${X(K)}" y2="136"/><text class="f-hlt" x="${X(K)}" y="148" text-anchor="middle">${two?'+':''}${K.toFixed(2)}</text>
    ${two?`<line class="f-mark" x1="${X(-K)}" y1="${Y(K)-8}" x2="${X(-K)}" y2="136"/><text class="f-hlt" x="${X(-K)}" y="148" text-anchor="middle">−${K.toFixed(2)}</text>`:''}
    <text class="f-hlt" x="${X(Math.min(K+0.9,3.1))}" y="${Y(K)-14}" text-anchor="middle">${two?'α/2':'P'}</text>${two?`<text class="f-hlt" x="${X(-Math.min(K+0.9,3.1))}" y="${Y(K)-14}" text-anchor="middle">α/2</text>`:''}`,
-   cap:two?'両側検定の棄却域：|検定統計量| が棄却限界値以上なら有意（赤い部分の面積が α）':`標準正規分布で K＝${K.toFixed(2)} より右側の面積（赤）が上側確率 P。正規分布表で読む値`};},
+   cap:two?'両側検定の棄却域：|検定統計量| が棄却限界値以上なら有意（赤い部分の面積がα）':`標準正規分布でK＝${K.toFixed(2)}より右側の面積（赤）が上側確率P。正規分布表で読む値`};},
  cap(){const X=x=>20+x*28,Y=(x,m)=>128-100*Math.exp(-((x-m)**2)/2),pts=[];for(let x=0;x<=10.001;x+=0.1)pts.push(`${X(x).toFixed(1)},${Y(x,5.8).toFixed(1)}`);
   const sh=[`${X(8.5)},128`];for(let x=8.5;x<=10.001;x+=0.05)sh.push(`${X(x).toFixed(1)},${Y(x,5.8).toFixed(1)}`);sh.push(`${X(10)},128`);
   return {svg:`<polygon class="f-hl" points="${sh.join(' ')}"/><polyline class="f-line" points="${pts.join(' ')}"/><line class="f-axis" x1="16" y1="128" x2="304" y2="128"/>
@@ -18,13 +18,13 @@ const FIG={
    <line class="f-dash" x1="${X(5)}" y1="18" x2="${X(5)}" y2="128"/><text x="${X(5)}" y="146" text-anchor="middle">中心</text>
    <line class="f-dash2" x1="${X(5.8)}" y1="28" x2="${X(5.8)}" y2="128"/><text class="f-pri" x="${X(5.8)}" y="22" text-anchor="middle">μ</text>
    <text class="f-hlt" x="${X(9.3)}" y="112" text-anchor="middle">不適合</text>`,
-   cap:'Cp＝(SU−SL)／6σ は規格幅とばらつきの比。平均 μ が中心からずれると、近いほうの規格までの距離で決まる Cpk は Cp より小さくなる'};},
+   cap:'Cp＝(SU−SL)／6σは規格幅とばらつきの比。平均μが中心からずれると、近いほうの規格までの距離で決まるCpkはCpより小さくなる'};},
  cc(){const v=[0.2,-0.4,0.6,0.1,-0.8,0.5,-0.2,0.9,0.3,-0.6,0.4,1.1,0.0,-0.3,3.4,0.7,-0.5,0.2,0.8,-0.1],X=i=>30+i*14,Y=z=>78-z*16;
   return {svg:`<line class="f-ucl" x1="24" y1="${Y(3)}" x2="300" y2="${Y(3)}"/><line class="f-ucl" x1="24" y1="${Y(-3)}" x2="300" y2="${Y(-3)}"/><line class="f-cl" x1="24" y1="${Y(0)}" x2="300" y2="${Y(0)}"/>
    <text class="f-hlt" x="302" y="${Y(3)+4}" text-anchor="end" dy="-6">UCL</text><text class="f-pri" x="302" y="${Y(0)-6}" text-anchor="end">CL</text><text class="f-hlt" x="302" y="${Y(-3)+14}" text-anchor="end">LCL</text>
    <polyline class="f-line thin" points="${v.map((z,i)=>`${X(i)},${Y(z)}`).join(' ')}"/>${v.map((z,i)=>`<circle class="${Math.abs(z)>3?'f-out':'f-pt'}" cx="${X(i)}" cy="${Y(z)}" r="${Math.abs(z)>3?5:3.2}"/>`).join('')}
    <text class="f-hlt" x="${X(14)}" y="${Y(3.4)-10}" text-anchor="middle">管理外れ</text>`,
-   cap:'管理限界（UCL・LCL）は中心線 CL から ±3σ。点が限界の外に出るか、並び方にくせ（連・傾向・周期）があれば異常と判断する'};},
+   cap:'管理限界（UCL・LCL）は中心線CLから ±3σ。点が限界の外に出るか、並び方にくせ（連・傾向・周期）があれば異常と判断する'};},
  oc(){const L=p=>{let s=0;for(let k=0;k<=1;k++){let c=1;for(let i=1;i<=k;i++)c=c*(20-k+i)/i;s+=c*p**k*(1-p)**(20-k);}return s;};
   const X=p=>30+p/0.3*270,Y=l=>130-l*110,pts=[];for(let p=0;p<=0.3001;p+=0.005)pts.push(`${X(p).toFixed(1)},${Y(L(p)).toFixed(1)}`);
   const p0=0.02,p1=0.15;
@@ -35,8 +35,8 @@ const FIG={
    <text x="${X(p0)}" y="146" text-anchor="middle">p0</text><text x="${X(p1)}" y="146" text-anchor="middle">p1</text>
    <line class="f-mark" x1="${X(p0)+3}" y1="${Y(1)}" x2="${X(p0)+3}" y2="${Y(L(p0))}"/><text class="f-hlt" x="${X(p0)+10}" y="${Y(1)+12}">α</text>
    <line class="f-mark2" x1="${X(p1)+3}" y1="${Y(L(p1))}" x2="${X(p1)+3}" y2="130"/><text class="f-okt" x="${X(p1)+10}" y="${Y(L(p1))+18}">β</text>
-   <text x="300" y="146" text-anchor="end">ロットの不適合品率 p</text><text x="36" y="14">合格確率 L(p)</text>`,
-   cap:'OC 曲線：p0（良いロット）で不合格になる確率が生産者危険 α、p1（悪いロット）で合格になる確率が消費者危険 β（図は n＝20、c＝1）'};},
+   <text x="300" y="146" text-anchor="end">ロットの不適合品率p</text><text x="36" y="14">合格確率L(p)</text>`,
+   cap:'OC曲線：p0（良いロット）で不合格になる確率が生産者危険α、p1（悪いロット）で合格になる確率が消費者危険β（図はn＝20、c＝1）'};},
  bathtub(){const X=t=>24+t*2.76,Y=l=>120-l,pts=[];for(let t=0;t<=100;t+=1){const l=t<25?70*Math.exp(-t/7)+18:t<70?18:18+(t-70)**2/12;pts.push(`${X(t).toFixed(1)},${Y(Math.min(l,100)).toFixed(1)}`);}
   return {svg:`<line class="f-axis" x1="24" y1="120" x2="304" y2="120"/><line class="f-axis" x1="24" y1="14" x2="24" y2="120"/><polyline class="f-line" points="${pts.join(' ')}"/>
    <line class="f-dash" x1="${X(25)}" y1="20" x2="${X(25)}" y2="120"/><line class="f-dash" x1="${X(70)}" y1="20" x2="${X(70)}" y2="120"/>
@@ -61,7 +61,7 @@ const FIG={
    <line class="f-mark2" x1="${X(0.6)}" y1="${Y(1.4)}" x2="${X(6.3)}" y2="${Y(7.1)}"/>${P.map(([x,y])=>`<circle class="f-pt" cx="${X(x)}" cy="${Y(y)}" r="3.5"/>`).join('')}
    <line class="f-dash" x1="${X(3.8)}" y1="${Y(4.6)}" x2="${X(3.8)}" y2="${Y(4.1)}"/><text x="${X(3.8)+4}" y="${Y(3.6)+12}">残差</text>
    <text class="f-okt" x="${X(3.6)}" y="${Y(6.4)}" text-anchor="end">ŷ＝a＋bx</text><text x="300" y="146" text-anchor="end">x</text><text x="36" y="14">y</text>`,
-   cap:'散布図と回帰直線：最小二乗法は y 方向の残差の平方和を最小にする。相関係数 r は直線的な関係の強さ（−1〜1）'};},
+   cap:'散布図と回帰直線：最小二乗法はy方向の残差の平方和を最小にする。相関係数rは直線的な関係の強さ（−1〜1）'};},
 };
 // 文章から図を選ぶ（上から優先）
 const FIGRULES=[['oc',/OC曲線|OC 曲線|生産者危険|消費者危険|合格確率|合格する確率/],['bathtub',/バスタブ|初期故障|摩耗故障|偶発故障/],['rel',/直列系|並列系|並列に|直列に|冗長|並列部分|並列ブロック/],
